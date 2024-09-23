@@ -1,3 +1,4 @@
-export function helloWorld(): void {
-  console.log('Hello world!')
-}
+import { YandexStreamer } from './streamer.js'
+import { YandexStreamerOptions } from './interfaces.js'
+
+export { YandexStreamer, YandexStreamerOptions }
