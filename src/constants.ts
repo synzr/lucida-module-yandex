@@ -8,5 +8,5 @@ export const HEADERS = {
 }
 
 export const API_URLS = {
-  ACCOUNT_SUCCESS: new URL('https://api.music.yandex.net/account/status')
+  ACCOUNT_STATUS: new URL('https://api.music.yandex.net/account/status')
 }

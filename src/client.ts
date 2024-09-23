@@ -18,6 +18,7 @@ export default class YandexClient {
 
     headers.set('User-Agent', HEADERS.USER_AGENT)
     headers.set('Authorization', format(HEADERS.AUTHORIZATION, this.oauthToken))
+    headers.set('Origin', HEADERS.ORIGIN)
 
     headers.set('X-Request-Id', requestId)
     headers.set('X-Yandex-Music-Client', HEADERS.X_YANDEX_MUSIC_CLIENT)
@@ -70,7 +71,7 @@ export default class YandexClient {
         plus: { hasPlus: premium }
       }
     } = await this.request<YandexAccountStatusResponse>(
-      API_URLS.ACCOUNT_SUCCESS
+      API_URLS.ACCOUNT_STATUS
     )
 
     return {
