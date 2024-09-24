@@ -2,7 +2,7 @@
 
 [Yandex.Music](https://music.yandex.ru) support for [Lucida downloader library](https://git.gay/lucida/lucida).
 
-Everything *(including playlist and search functionality)* is implemented.
+Everything _(including playlist and search functionality)_ is implemented.
 
 ### Installation
 
