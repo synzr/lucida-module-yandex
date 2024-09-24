@@ -138,7 +138,7 @@ export default class YandexClient {
     codecs: string[],
     transports: string[]
   ): Promise<YandexDownloadInfo> {
-    const signature = await generateStreamSignature(
+    const signature = generateStreamSignature(
       trackId,
       quality,
       codecs,
