@@ -50,11 +50,7 @@ export function convertToAlbumObject(album: YandexAlbum): Album {
           })
           .join()
       : undefined,
-    // TODO(synzr): convert genre enum to readable ones
-    //              "ukrrock" -> украинский рок/ukrainian rock
-    genre: album.genre ? [album.genre] : [],
-    // TODO(synzr): fetch for album region availability
-    regions: []
+    genre: album.genre ? [album.genre] : []
   }
 }
 
