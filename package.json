@@ -24,10 +24,10 @@
     "globals": "^15.9.0",
     "prettier": "^3.3.3",
     "prettier-config-standard": "^7.0.0",
+    "typescript": "^5.6.2",
     "typescript-eslint": "^8.6.0"
   },
   "dependencies": {
-    "lucida": "2.0.0-47",
-    "typescript": "^5.6.2"
+    "lucida": "2.0.0-47"
   }
 }
