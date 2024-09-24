@@ -4,7 +4,10 @@ import { API_URLS, HEADERS } from './constants.js'
 import { YandexError } from './errors.js'
 import {
   YandexAccountStatusResponse,
-  YandexErrorResponse
+  YandexAlbum,
+  YandexErrorResponse,
+  YandexSearchResults,
+  YandexTrack
 } from './interfaces.js'
 
 import { randomUUID } from 'node:crypto'
@@ -61,24 +64,40 @@ export default class YandexClient {
       )
   }
 
-  // TODO(synzr): check if response.result.account.hostedUser
-  //              means that account is children-owned
-  //              SEE: https://yandex.ru/support/id/ru/family/children.html
   async getAccountStatus(): Promise<StreamerAccount> {
     const {
-      result: {
-        account: { region: country, hostedUser: isChildrenOwnedAccount },
-        plus: { hasPlus: premium }
-      }
-    } = await this.request<YandexAccountStatusResponse>(
-      API_URLS.ACCOUNT_STATUS
-    )
+      account: { child: isChildrenOwnedAccount },
+      plus: { hasPlus: premium }
+    } = await this.request<YandexAccountStatusResponse>(API_URLS.ACCOUNT_STATUS)
 
     return {
       valid: true,
       explicit: !isChildrenOwnedAccount,
-      premium,
-      country
+      premium
     }
+  }
+
+  async getAlbum(albumId: number): Promise<YandexAlbum> {
+    const url = API_URLS.ALBUM({ albumId })
+    return await this.request<YandexAlbum>(url)
+  }
+
+  async getTracks(trackIds: number[]): Promise<YandexTrack[]> {
+    const url = API_URLS.TRACKS({ trackIds })
+    return await this.request<YandexTrack[]>(url)
+  }
+
+  async instantSearch(
+    query: string,
+    limit: number
+  ): Promise<YandexSearchResults> {
+    return await this.request<YandexSearchResults>(
+      API_URLS.INSTANT_SEARCH_MIXED({
+        query,
+        types: ['album', 'artist', 'track'],
+        page: 0,
+        pageSize: limit
+      })
+    )
   }
 }

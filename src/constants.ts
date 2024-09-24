@@ -8,5 +8,33 @@ export const HEADERS = {
 }
 
 export const API_URLS = {
-  ACCOUNT_STATUS: new URL('https://api.music.yandex.net/account/status')
+  ACCOUNT_STATUS: new URL('https://api.music.yandex.net/account/status'),
+  ALBUM({ albumId }: { albumId: number }): URL {
+    return new URL(`/album/${albumId}/`, 'https://api.music.yandex.net/')
+  },
+  TRACKS({ trackIds: $trackIds }: { trackIds: number[] }): URL {
+    const trackIds = $trackIds.map((trackId) => trackId.toString()).join(',')
+    return new URL(
+      `/tracks?trackIds=${trackIds}`,
+      'https://api.music.yandex.net/'
+    )
+  },
+  INSTANT_SEARCH_MIXED({
+    query,
+    types,
+    page,
+    pageSize
+  }: {
+    query: string
+    types: string[]
+    page: number
+    pageSize: number
+  }): URL {
+    query = encodeURIComponent(query)
+
+    return new URL(
+      `/search/instant/mixed?text=${query}&type=${types.join(',')}&page=${page}&pageSize=${pageSize}`,
+      'https://api.music.yandex.net/'
+    )
+  }
 }

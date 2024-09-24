@@ -7,7 +7,17 @@ import {
 } from 'lucida/types'
 
 import YandexClient from './client.js'
-import { YandexStreamerOptions } from './interfaces.js'
+import {
+  YandexAlbumSearchResult,
+  YandexArtistSearchResult,
+  YandexStreamerOptions,
+  YandexTrackSearchResult
+} from './interfaces.js'
+import {
+  convertToAlbumObject,
+  convertToArtistObject,
+  convertToTrackObject
+} from './converters.js'
 
 export class YandexStreamer implements Streamer {
   private readonly client: YandexClient
@@ -19,7 +29,33 @@ export class YandexStreamer implements Streamer {
   }
 
   async search(query: string, limit: number): Promise<SearchResults> {
-    throw new Error('Method not implemented.')
+    return this.client
+      .instantSearch(query, limit)
+      .then(function onSuccess(search): SearchResults {
+        console.log(search)
+        const searchGroups = Object.groupBy(
+          search.results,
+          function groupCallback(searchResult) {
+            return searchResult.type
+          }
+        )
+
+        return {
+          query,
+          tracks:
+            searchGroups.track?.map((object) =>
+              convertToTrackObject((object as YandexTrackSearchResult).track)
+            ) ?? [],
+          albums:
+            searchGroups.album?.map((object) =>
+              convertToAlbumObject((object as YandexAlbumSearchResult).album)
+            ) ?? [],
+          artists:
+            searchGroups.artist?.map((object) =>
+              convertToArtistObject((object as YandexArtistSearchResult).artist)
+            ) ?? []
+        }
+      })
   }
 
   async getByUrl(url: string): Promise<GetByUrlResponse> {
@@ -31,6 +67,10 @@ export class YandexStreamer implements Streamer {
   }
 
   async getAccountInfo(): Promise<StreamerAccount> {
-    return await this.client.getAccountStatus()
+    try {
+      return await this.client.getAccountStatus()
+    } catch {
+      return { valid: false }
+    }
   }
 }
