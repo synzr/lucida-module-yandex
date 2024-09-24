@@ -54,5 +54,35 @@ export const API_URLS = {
       `/artists/${artistId}/brief-info`,
       'https://api.music.yandex.net/'
     )
+  },
+  GET_FILE_INFO({
+    signature,
+    timestamp,
+    trackId,
+    quality,
+    codecs,
+    transports
+  }: {
+    signature: string
+    timestamp: number
+    trackId: number
+    quality: string
+    codecs: string[]
+    transports: string[]
+  }) {
+    signature = encodeURIComponent(signature)
+    quality = encodeURIComponent(quality)
+
+    const codecsValue = encodeURIComponent(codecs.join(','))
+    const transportsValue = encodeURIComponent(transports.join(','))
+
+    return new URL(
+      `/get-file-info?ts=${timestamp}&trackId=${trackId}&quality=${quality}&codecs=${codecsValue}&transports=${transportsValue}&sign=${signature}`,
+      'https://api.music.yandex.net/'
+    )
   }
+}
+
+export const KEYS = {
+  STREAM_SIGNATURE: 'kzqU4XhfCaY6B6JTHODeq5'
 }

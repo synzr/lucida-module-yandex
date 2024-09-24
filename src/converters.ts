@@ -18,7 +18,7 @@ const AVAILABLE_COVER_SIZES = [
 export function convertToArtistObject(artist: YandexArtist): Artist {
   return {
     id: artist.id,
-    url: `https://music.yandex.ru/artists/${artist.id}`,
+    url: `https://music.yandex.ru/artist/${artist.id}`,
     name: artist.name,
     pictures: artist.cover
       ? [`https://${artist.cover.uri.replace('%%', 'orig')}`]
@@ -39,16 +39,16 @@ export function convertToAlbumObject(album: YandexAlbum): Album {
   return {
     title: album.title,
     id: album.id,
-    url: `https://music.yandex.ru/albums/${album.id}`,
+    url: `https://music.yandex.ru/album/${album.id}`,
     trackCount: album.trackCount,
     releaseDate: new Date(album.releaseDate),
     coverArtwork: album.coverUri ? coverUriToObjects(album.coverUri) : [],
     label: album.labels
       ? album.labels
-        .map(function getLabelName(label: YandexLabel): string {
-          return label.name
-        })
-        .join()
+          .map(function getLabelName(label: YandexLabel): string {
+            return label.name
+          })
+          .join()
       : undefined,
     // TODO(synzr): convert genre enum to readable ones
     //              "ukrrock" -> украинский рок/ukrainian rock
@@ -64,7 +64,7 @@ export function convertToTrackObject(track: YandexTrack): Track {
   return {
     title: track.title,
     id: track.id,
-    url: `https://music.yandex.ru/albums/${album.id}/tracks/${track.id}`,
+    url: `https://music.yandex.ru/album/${album.id}/track/${track.id}`,
     explicit: track.contentWarning === 'explicit',
     copyright: track.major.name,
     artists: track.artists.map(convertToArtistObject),

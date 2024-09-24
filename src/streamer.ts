@@ -5,6 +5,7 @@ import {
   Episode,
   EpisodeGetByUrlResponse,
   GetByUrlResponse,
+  GetStreamResponse,
   ItemType,
   PlaylistGetByUrlResponse,
   Podcast,
@@ -21,6 +22,7 @@ import {
   YandexAlbumSearchResult,
   YandexArtistSearchResult,
   YandexStreamerOptions,
+  YandexTrack,
   YandexTrackSearchResult
 } from './interfaces.js'
 import {
@@ -29,6 +31,8 @@ import {
   convertToPlaylistObject,
   convertToTrackObject
 } from './converters.js'
+
+import { Readable } from 'node:stream'
 
 export class YandexStreamer implements Streamer {
   private readonly client: YandexClient
@@ -42,9 +46,9 @@ export class YandexStreamer implements Streamer {
   async search(query: string, limit: number): Promise<SearchResults> {
     return this.client
       .instantSearch(query, limit)
-      .then(function onSuccess(search): SearchResults {
+      .then(function onSuccess(searchResults): SearchResults {
         const searchGroups = Object.groupBy(
-          search.results,
+          searchResults,
           function groupCallback(searchResult) {
             return searchResult.type
           }
@@ -68,15 +72,49 @@ export class YandexStreamer implements Streamer {
       })
   }
 
+  private getStream(track: YandexTrack): () => Promise<GetStreamResponse> {
+    return async (): Promise<GetStreamResponse> => {
+      const { codec, urls } = await this.client.getFileInfo(
+        +track.id,
+        'lossless',
+        ['mp3', 'aac', 'flac'],
+        ['raw']
+      )
+
+      const streamUrl = urls.shift()!
+      const streamResponse = await fetch(streamUrl)
+
+      // NOTE: strm CDN always respond with "audio/mpeg"
+      //       for no reason
+      let mimeType: string
+      switch (codec) {
+        case 'aac':
+          mimeType = 'audio/aac'
+          break
+        case 'mp3':
+          mimeType = 'audio/mpeg'
+          break
+        case 'flac':
+          mimeType = 'audio/flac'
+          break
+      }
+
+      return {
+        mimeType,
+        // @ts-expect-error
+        stream: Readable.fromWeb(streamResponse.body!),
+        sizeBytes: parseInt(streamResponse.headers.get('content-length')!, 10)
+      }
+    }
+  }
+
   async getByUrl(url: string): Promise<GetByUrlResponse> {
     const { pathname } = new URL(url)
     const type = await this.getTypeFromUrl(url)
 
     switch (type) {
       case 'artist': {
-        const artist = await this.client.getArtist(
-          +pathname.split('/').pop()!
-        )
+        const artist = await this.client.getArtist(+pathname.split('/').pop()!)
 
         return {
           type: 'artist',
@@ -85,23 +123,23 @@ export class YandexStreamer implements Streamer {
       }
       case 'track':
       case 'episode': {
-        const track = await this.client.getTracks([
+        const tracks = await this.client.getTracks([
           +pathname.split('/').pop()!
         ])
+        const track = tracks.pop()!
 
         return {
           type,
           metadata:
             type === 'episode'
-              ? (convertToTrackObject(track.pop()!) as Episode)
-              : (convertToTrackObject(track.pop()!) as Track)
+              ? (convertToTrackObject(track) as Episode)
+              : (convertToTrackObject(track) as Track),
+          getStream: this.getStream(track)
         } as EpisodeGetByUrlResponse | TrackGetByUrlResponse
       }
       case 'album':
       case 'podcast': {
-        const album = await this.client.getAlbum(
-          +pathname.split('/').pop()!
-        )
+        const album = await this.client.getAlbum(+pathname.split('/').pop()!)
 
         return {
           type,
@@ -134,7 +172,7 @@ export class YandexStreamer implements Streamer {
       return 'artist'
     }
 
-    if (pathname.includes('/tracks/')) {
+    if (pathname.includes('/track/')) {
       const tracks = await this.client.getTracks([+url.split('/').pop()!])
 
       return tracks.pop()!.albums.pop()!.metaType === 'music'

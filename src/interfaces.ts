@@ -83,6 +83,19 @@ export type YandexSearchResult =
   | YandexArtistSearchResult
   | YandexTrackSearchResult
 
-export type YandexSearchResults = {
-  results: YandexSearchResult[]
+export interface YandexSigningRequestResult {
+  timestamp: number
+  signature: string
+}
+
+export interface YandexDownloadInfo {
+  trackId: string
+  quality: string
+  codec: 'mp3' | 'aac' | 'flac'
+  bitrate: number
+  transport: 'raw'
+  size: number
+  urls: string[]
+  url: string
+  realId: string
 }

@@ -6,14 +6,16 @@ import {
   YandexAccountStatusResponse,
   YandexAlbum,
   YandexArtist,
+  YandexDownloadInfo,
   YandexErrorObject,
   YandexPlaylist,
-  YandexSearchResults,
+  YandexSearchResult,
   YandexTrack
 } from './interfaces.js'
 
 import { randomUUID } from 'node:crypto'
 import { format } from 'node:util'
+import { generateStreamSignature } from './security.js'
 
 export default class YandexClient {
   constructor(private readonly oauthToken: string) {}
@@ -54,25 +56,20 @@ export default class YandexClient {
             Object.hasOwn(response, 'name') &&
             Object.hasOwn(response, 'message')
           ) {
-            throw YandexError.createFromObject(
-              response as YandexErrorObject
-            )
+            throw YandexError.createFromObject(response as YandexErrorObject)
           }
 
           return response as T
         },
         function onError(error) {
-          throw new Error(
-            'Bad server response; Response is not JSON',
-            { cause: error }
-          )
+          throw new Error('Bad server response; Response is not JSON', {
+            cause: error
+          })
         }
       )
-      .catch(
-        function onError(error) {
-          throw error
-        }
-      )
+      .catch(function onError(error) {
+        throw error
+      })
   }
 
   async getAccountStatus(): Promise<StreamerAccount> {
@@ -91,11 +88,11 @@ export default class YandexClient {
   async getArtist(artistId: number): Promise<YandexArtist> {
     const url = API_URLS.ARTIST_WITH_BRIEF_INFO({ artistId })
 
-    const result = await this.request<{
+    const { artist } = await this.request<{
       artist: YandexArtist
     }>(url)
 
-    return result.artist
+    return artist
   }
 
   async getAlbum(albumId: number): Promise<YandexAlbum> {
@@ -120,8 +117,10 @@ export default class YandexClient {
   async instantSearch(
     query: string,
     limit: number
-  ): Promise<YandexSearchResults> {
-    return await this.request<YandexSearchResults>(
+  ): Promise<YandexSearchResult[]> {
+    const { results } = await this.request<{
+      results: YandexSearchResult[]
+    }>(
       API_URLS.INSTANT_SEARCH_MIXED({
         query,
         types: ['album', 'artist', 'track'],
@@ -129,5 +128,43 @@ export default class YandexClient {
         pageSize: limit
       })
     )
+
+    return results
+  }
+
+  async getFileInfo(
+    trackId: number,
+    quality: string,
+    codecs: string[],
+    transports: string[]
+  ): Promise<YandexDownloadInfo> {
+    const signature = await generateStreamSignature(
+      trackId,
+      quality,
+      codecs,
+      transports
+    )
+
+    try {
+      const { downloadInfo } = await this.request<{
+        downloadInfo: YandexDownloadInfo
+      }>(
+        API_URLS.GET_FILE_INFO({
+          ...signature,
+          trackId,
+          quality,
+          codecs,
+          transports
+        })
+      )
+
+      return downloadInfo
+    } catch (error: any) {
+      if (error.message === 'Invalid Sign') {
+        throw new Error('Invalid sign; REPORT THIS TO MAINTAINERS')
+      }
+
+      throw error
+    }
   }
 }
