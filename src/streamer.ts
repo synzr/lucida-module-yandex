@@ -13,6 +13,7 @@ import {
   SearchResults,
   Streamer,
   StreamerAccount,
+  StreamerTestData,
   Track,
   TrackGetByUrlResponse
 } from 'lucida/types'
@@ -38,6 +39,20 @@ export class YandexStreamer implements Streamer {
   private readonly client: YandexClient
 
   hostnames = ['music.yandex.ru', 'music.yandex.com']
+  testData: StreamerTestData = {
+    'https://music.yandex.ru/album/4072009/track/33307663': {
+      title: 'Бета-каротин - Бумбокс (BoomBox)',
+      type: 'track'
+    },
+    'https://music.yandex.ru/album/3879328': {
+      title: 'Глубина резкости - Дельфин (Dolphin)',
+      type: 'album'
+    },
+    'https://music.yandex.ru/users/yearbyyear/playlists/1235': {
+      title: "International 2010s Pop Music (Yandex.Music editor' playlist)",
+      type: 'playlist'
+    }
+  }
 
   constructor(options: YandexStreamerOptions) {
     this.client = new YandexClient(options.oauthToken)
