@@ -33,6 +33,7 @@ export interface YandexAlbum {
   id: number
   title: string
   type: 'music' | 'podcast' | 'albumbook'
+  metaType?: 'music' | 'podcast' | 'albumbook'
   releaseDate: string
   coverUri: string
   trackCount: number

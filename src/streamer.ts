@@ -63,7 +63,26 @@ export class YandexStreamer implements Streamer {
   }
 
   async getTypeFromUrl(url: string): Promise<ItemType> {
-    throw new Error('Method not implemented.')
+    const { pathname } = new URL(url)
+
+    if (pathname.startsWith('/users/') && pathname.includes('/playlists/')) {
+      return 'playlist'
+    }
+
+    if (pathname.startsWith('/artists/')) {
+      return 'artist'
+    }
+
+    if (pathname.includes('/tracks/')) {
+      const track = await this.client.getTracks([+url.split('/').pop()!])
+
+      return track.pop()!.albums.pop()!.metaType === 'music'
+        ? 'track'
+        : 'episode'
+    }
+
+    const album = await this.client.getAlbum(+url.split('/').pop()!)
+    return album.type === 'music' ? 'album' : 'podcast'
   }
 
   async getAccountInfo(): Promise<StreamerAccount> {
