@@ -5,7 +5,9 @@ import { YandexError } from './errors.js'
 import {
   YandexAccountStatusResponse,
   YandexAlbum,
-  YandexErrorResponse,
+  YandexArtist,
+  YandexErrorObject,
+  YandexPlaylist,
   YandexSearchResults,
   YandexTrack
 } from './interfaces.js'
@@ -36,7 +38,7 @@ export default class YandexClient {
   private async request<T>(url: URL): Promise<T> {
     const requestId = randomUUID()
 
-    return fetch(url, {
+    return await fetch(url, {
       headers: this.createHeaders(requestId)
     })
       .then(function onSuccess(response) {
@@ -48,18 +50,27 @@ export default class YandexClient {
       })
       .then(
         function onSuccess(response: Object) {
-          if (Object.hasOwn(response, 'error')) {
+          if (
+            Object.hasOwn(response, 'name') &&
+            Object.hasOwn(response, 'message')
+          ) {
             throw YandexError.createFromObject(
-              (response as YandexErrorResponse).error
+              response as YandexErrorObject
             )
           }
 
           return response as T
         },
         function onError(error) {
-          throw new Error('Bad server response; Response is not JSON', {
-            cause: error
-          })
+          throw new Error(
+            'Bad server response; Response is not JSON',
+            { cause: error }
+          )
+        }
+      )
+      .catch(
+        function onError(error) {
+          throw error
         }
       )
   }
@@ -77,6 +88,16 @@ export default class YandexClient {
     }
   }
 
+  async getArtist(artistId: number): Promise<YandexArtist> {
+    const url = API_URLS.ARTIST_WITH_BRIEF_INFO({ artistId })
+
+    const result = await this.request<{
+      artist: YandexArtist
+    }>(url)
+
+    return result.artist
+  }
+
   async getAlbum(albumId: number): Promise<YandexAlbum> {
     const url = API_URLS.ALBUM({ albumId })
     return await this.request<YandexAlbum>(url)
@@ -85,6 +106,15 @@ export default class YandexClient {
   async getTracks(trackIds: number[]): Promise<YandexTrack[]> {
     const url = API_URLS.TRACKS({ trackIds })
     return await this.request<YandexTrack[]>(url)
+  }
+
+  async getPlaylist(
+    userId: string,
+    playlistKind: number
+  ): Promise<YandexPlaylist> {
+    return await this.request<YandexPlaylist>(
+      API_URLS.PLAYLIST({ userId, playlistKind })
+    )
   }
 
   async instantSearch(

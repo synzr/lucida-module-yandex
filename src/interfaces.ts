@@ -7,10 +7,6 @@ export interface YandexErrorObject {
   message: string
 }
 
-export interface YandexErrorResponse {
-  error: YandexErrorObject
-}
-
 // NOTE: interfaces with pure minimal for the implementation needs
 export interface YandexAccountStatusResponse {
   account: { child: boolean }
@@ -53,6 +49,18 @@ export interface YandexTrack {
   albums: YandexAlbum[]
   available: boolean
   durationMs: number
+}
+
+export interface YandexPlaylist {
+  kind: number
+  title: string
+  cover: {
+    type: 'pic' | 'mosaic'
+    itemsUrl?: string[]
+    uri?: string
+  }
+  owner: { login: string }
+  trackCount: number
 }
 
 export interface YandexAlbumSearchResult {

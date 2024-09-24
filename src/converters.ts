@@ -1,8 +1,9 @@
-import { Album, Artist, CoverArtwork, Track } from 'lucida/types'
+import { Album, Artist, CoverArtwork, Playlist, Track } from 'lucida/types'
 import {
   YandexAlbum,
   YandexArtist,
   YandexLabel,
+  YandexPlaylist,
   YandexTrack
 } from './interfaces.js'
 
@@ -43,10 +44,12 @@ export function convertToAlbumObject(album: YandexAlbum): Album {
     releaseDate: new Date(album.releaseDate),
     coverArtwork: album.coverUri ? coverUriToObjects(album.coverUri) : [],
     label: album.labels
-      .map(function getLabelName(label: YandexLabel): string {
-        return label.name
-      })
-      .join(),
+      ? album.labels
+        .map(function getLabelName(label: YandexLabel): string {
+          return label.name
+        })
+        .join()
+      : undefined,
     // TODO(synzr): convert genre enum to readable ones
     //              "ukrrock" -> украинский рок/ukrainian rock
     genre: album.genre ? [album.genre] : [],
@@ -69,5 +72,18 @@ export function convertToTrackObject(track: YandexTrack): Track {
     durationMs: track.durationMs,
     coverArtwork: track.coverUri ? coverUriToObjects(track.coverUri) : [],
     releaseDate: new Date(album.releaseDate)
+  }
+}
+
+export function convertToPlaylistObject(playlist: YandexPlaylist): Playlist {
+  return {
+    id: playlist.kind,
+    title: playlist.title,
+    url: `https://music.yandex.ru/users/${playlist.owner.login}/playlists/${playlist.kind}`,
+    coverArtwork:
+      playlist.cover.type === 'mosaic'
+        ? coverUriToObjects(playlist.cover.itemsUrl!.shift()!)
+        : coverUriToObjects(playlist.cover.uri!),
+    trackCount: playlist.trackCount
   }
 }

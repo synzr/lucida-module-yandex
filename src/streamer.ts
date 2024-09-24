@@ -1,9 +1,19 @@
 import {
+  Album,
+  AlbumGetByUrlResponse,
+  ArtistGetByUrlResponse,
+  Episode,
+  EpisodeGetByUrlResponse,
   GetByUrlResponse,
   ItemType,
+  PlaylistGetByUrlResponse,
+  Podcast,
+  PodcastGetByUrlResponse,
   SearchResults,
   Streamer,
-  StreamerAccount
+  StreamerAccount,
+  Track,
+  TrackGetByUrlResponse
 } from 'lucida/types'
 
 import YandexClient from './client.js'
@@ -16,6 +26,7 @@ import {
 import {
   convertToAlbumObject,
   convertToArtistObject,
+  convertToPlaylistObject,
   convertToTrackObject
 } from './converters.js'
 
@@ -32,7 +43,6 @@ export class YandexStreamer implements Streamer {
     return this.client
       .instantSearch(query, limit)
       .then(function onSuccess(search): SearchResults {
-        console.log(search)
         const searchGroups = Object.groupBy(
           search.results,
           function groupCallback(searchResult) {
@@ -59,7 +69,58 @@ export class YandexStreamer implements Streamer {
   }
 
   async getByUrl(url: string): Promise<GetByUrlResponse> {
-    throw new Error('Method not implemented.')
+    const { pathname } = new URL(url)
+    const type = await this.getTypeFromUrl(url)
+
+    switch (type) {
+      case 'artist': {
+        const artist = await this.client.getArtist(
+          +pathname.split('/').pop()!
+        )
+
+        return {
+          type: 'artist',
+          metadata: convertToArtistObject(artist)
+        } as ArtistGetByUrlResponse
+      }
+      case 'track':
+      case 'episode': {
+        const track = await this.client.getTracks([
+          +pathname.split('/').pop()!
+        ])
+
+        return {
+          type,
+          metadata:
+            type === 'episode'
+              ? (convertToTrackObject(track.pop()!) as Episode)
+              : (convertToTrackObject(track.pop()!) as Track)
+        } as EpisodeGetByUrlResponse | TrackGetByUrlResponse
+      }
+      case 'album':
+      case 'podcast': {
+        const album = await this.client.getAlbum(
+          +pathname.split('/').pop()!
+        )
+
+        return {
+          type,
+          metadata:
+            type === 'podcast'
+              ? (convertToAlbumObject(album) as Podcast)
+              : (convertToAlbumObject(album) as Album)
+        } as AlbumGetByUrlResponse | PodcastGetByUrlResponse
+      }
+      case 'playlist': {
+        const [, userId, , playlistKind] = pathname.substring(1).split('/')
+        const playlist = await this.client.getPlaylist(userId, +playlistKind)
+
+        return {
+          type: 'playlist',
+          metadata: convertToPlaylistObject(playlist)
+        } as PlaylistGetByUrlResponse
+      }
+    }
   }
 
   async getTypeFromUrl(url: string): Promise<ItemType> {
@@ -69,14 +130,14 @@ export class YandexStreamer implements Streamer {
       return 'playlist'
     }
 
-    if (pathname.startsWith('/artists/')) {
+    if (pathname.startsWith('/artist/')) {
       return 'artist'
     }
 
     if (pathname.includes('/tracks/')) {
-      const track = await this.client.getTracks([+url.split('/').pop()!])
+      const tracks = await this.client.getTracks([+url.split('/').pop()!])
 
-      return track.pop()!.albums.pop()!.metaType === 'music'
+      return tracks.pop()!.albums.pop()!.metaType === 'music'
         ? 'track'
         : 'episode'
     }
