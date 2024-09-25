@@ -1,32 +1,26 @@
-export interface YandexStreamerOptions {
-  oauthToken: string
-  customUserAgent?: string
-}
-
-export interface YandexErrorObject {
+export interface APIErrorObject {
   name: string
   message: string
 }
 
-// NOTE: interfaces with pure minimal for the implementation needs
-export interface YandexAccountStatusResponse {
+export interface APIAccountStatusResponse {
   account: { child: boolean }
   plus: { hasPlus: boolean }
 }
 
-export interface YandexArtist {
+export interface APIArtist {
   id: string | number
   name: string
   cover?: { uri: string } | null
   available?: boolean
 }
 
-export interface YandexLabel {
+export interface APILabel {
   id: number
   name: string
 }
 
-export interface YandexAlbum {
+export interface APIAlbum {
   id: number
   title: string
   type: 'music' | 'podcast' | 'albumbook'
@@ -34,25 +28,25 @@ export interface YandexAlbum {
   releaseDate: string
   coverUri: string
   trackCount: number
-  artists: YandexArtist[]
-  labels: YandexLabel[]
+  artists: APIArtist[]
+  labels: APILabel[]
   available: boolean
   genre?: string
 }
 
-export interface YandexTrack {
+export interface APITrack {
   id: string
   title: string
   major: { id: number; name: string }
   contentWarning?: 'explicit'
   coverUri?: string
-  artists: YandexArtist[]
-  albums: YandexAlbum[]
+  artists: APIArtist[]
+  albums: APIAlbum[]
   available: boolean
   durationMs: number
 }
 
-export interface YandexPlaylist {
+export interface APIPlaylist {
   kind: number
   title: string
   cover: {
@@ -64,33 +58,27 @@ export interface YandexPlaylist {
   trackCount: number
 }
 
-export interface YandexAlbumSearchResult {
+export interface APIAlbumSearchResult {
   type: 'album'
-  album: YandexAlbum
+  album: APIAlbum
 }
 
-export interface YandexArtistSearchResult {
+export interface APIArtistSearchResult {
   type: 'artist'
-  artist: YandexArtist
+  artist: APIArtist
 }
 
-export interface YandexTrackSearchResult {
+export interface APITrackSearchResult {
   type: 'track'
-  track: YandexTrack
+  track: APITrack
 }
 
-export type YandexSearchResult =
-  | YandexAlbumSearchResult
-  | YandexArtistSearchResult
-  | YandexTrackSearchResult
+export type APISearchResult =
+  | APIAlbumSearchResult
+  | APIArtistSearchResult
+  | APITrackSearchResult
 
-export interface YandexSigningRequestResult {
-  timestamp: number
-  signature: string
-  raw: { message: string; key: string }
-}
-
-export interface YandexDownloadInfo {
+export interface APIDownloadInfo {
   trackId: string
   quality: string
   codec: 'mp3' | 'aac' | 'flac'

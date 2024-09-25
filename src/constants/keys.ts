@@ -1,0 +1,1 @@
+export const KEY_STREAM_SIGNATURE = 'kzqU4XhfCaY6B6JTHODeq5'

@@ -1,11 +1,11 @@
 import { Album, Artist, CoverArtwork, Playlist, Track } from 'lucida/types'
 import {
-  YandexAlbum,
-  YandexArtist,
-  YandexLabel,
-  YandexPlaylist,
-  YandexTrack
-} from './interfaces.js'
+  APIAlbum,
+  APIArtist,
+  APILabel,
+  APIPlaylist,
+  APITrack
+} from '../interfaces/api.js'
 
 const AVAILABLE_COVER_SIZES = [
   '50x50',
@@ -15,7 +15,7 @@ const AVAILABLE_COVER_SIZES = [
   '1000x1000'
 ]
 
-export function convertToArtistObject(artist: YandexArtist): Artist {
+export function convertToArtistObject(artist: APIArtist): Artist {
   return {
     id: artist.id,
     url: `https://music.yandex.ru/artist/${artist.id}`,
@@ -35,7 +35,7 @@ export function coverUriToObjects(coverUri: string): CoverArtwork[] {
   })
 }
 
-export function convertToAlbumObject(album: YandexAlbum): Album {
+export function convertToAlbumObject(album: APIAlbum): Album {
   return {
     title: album.title,
     id: album.id,
@@ -45,7 +45,7 @@ export function convertToAlbumObject(album: YandexAlbum): Album {
     coverArtwork: album.coverUri ? coverUriToObjects(album.coverUri) : [],
     label: album.labels
       ? album.labels
-          .map(function getLabelName(label: YandexLabel): string {
+          .map(function getLabelName(label: APILabel): string {
             return label.name
           })
           .join()
@@ -54,7 +54,7 @@ export function convertToAlbumObject(album: YandexAlbum): Album {
   }
 }
 
-export function convertToTrackObject(track: YandexTrack): Track {
+export function convertToTrackObject(track: APITrack): Track {
   const album = track.albums.shift()!
 
   return {
@@ -71,7 +71,7 @@ export function convertToTrackObject(track: YandexTrack): Track {
   }
 }
 
-export function convertToPlaylistObject(playlist: YandexPlaylist): Playlist {
+export function convertToPlaylistObject(playlist: APIPlaylist): Playlist {
   return {
     id: playlist.kind,
     title: playlist.title,

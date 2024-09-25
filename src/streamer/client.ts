@@ -1,28 +1,43 @@
 import { StreamerAccount } from 'lucida/types'
-import { API_URLS, HEADERS } from './constants.js'
+import {
+  HEADER_AUTHORIZATION,
+  HEADER_ORIGIN,
+  HEADER_USER_AGENT,
+  HEADER_X_YANDEX_MUSIC_CLIENT
+} from '../constants/headers.js'
 
 import {
   BadServerResponseError,
   BadSignatureError,
   SmartCaptchaError,
-  YandexError
-} from './errors.js'
+  APIError
+} from '../errors.js'
 import {
-  YandexAccountStatusResponse,
-  YandexAlbum,
-  YandexArtist,
-  YandexDownloadInfo,
-  YandexErrorObject,
-  YandexPlaylist,
-  YandexSearchResult,
-  YandexTrack
-} from './interfaces.js'
+  APIAccountStatusResponse,
+  APIAlbum,
+  APIArtist,
+  APIDownloadInfo,
+  APIErrorObject,
+  APIPlaylist,
+  APISearchResult,
+  APITrack
+} from '../interfaces/api.js'
+
+import {
+  createAlbumAPIUrl,
+  createArtistAPIUrl,
+  createFileInfoAPIUrl,
+  createInstantSearchMixedAPIUrl,
+  createPlaylistAPIUrl,
+  createTracksAPIUrl
+} from '../converters/urls.js'
+import { API_URL_ACCOUNT_STATUS } from '../constants/api.js'
 
 import { randomUUID } from 'node:crypto'
 import { format } from 'node:util'
 import { generateStreamSignature } from './security.js'
 
-export default class YandexClient {
+export default class APIClient {
   constructor(
     private readonly oauthToken: string,
     private readonly userAgent?: string
@@ -31,16 +46,16 @@ export default class YandexClient {
   private createHeaders(requestId: string): Headers {
     const headers = new Headers()
 
-    headers.set('User-Agent', this.userAgent ?? HEADERS.USER_AGENT)
-    headers.set('Authorization', format(HEADERS.AUTHORIZATION, this.oauthToken))
-    headers.set('Origin', HEADERS.ORIGIN)
+    headers.set('User-Agent', this.userAgent ?? HEADER_USER_AGENT)
+    headers.set('Authorization', format(HEADER_AUTHORIZATION, this.oauthToken))
+    headers.set('Origin', HEADER_ORIGIN)
 
     headers.set('X-Request-Id', requestId)
-    headers.set('X-Yandex-Music-Client', HEADERS.X_YANDEX_MUSIC_CLIENT)
-    headers.set('X-Yandex-Music-Frontend', 'new')
+    headers.set('X-API-Music-Client', HEADER_X_YANDEX_MUSIC_CLIENT)
+    headers.set('X-API-Music-Frontend', 'new')
 
     // NOTE: no useless invocation info in the server response
-    headers.set('X-Yandex-Music-Without-Invocation-Info', '1')
+    headers.set('X-API-Music-Without-Invocation-Info', '1')
 
     return headers
   }
@@ -51,7 +66,7 @@ export default class YandexClient {
       headers: this.createHeaders(requestId)
     })
 
-    if (response.headers.has('X-Yandex-Captcha')) {
+    if (response.headers.has('X-API-Captcha')) {
       throw new SmartCaptchaError(
         'Server just returned the SmartCaptcha challenge page. :(',
         response
@@ -89,8 +104,8 @@ export default class YandexClient {
       Object.hasOwn(responseData as object, 'error') &&
       Object.hasOwn(responseData as object, 'message')
     ) {
-      const errorObject = responseData as YandexErrorObject
-      throw YandexError.createFromObject(errorObject)
+      const errorObject = responseData as APIErrorObject
+      throw APIError.createFromObject(errorObject)
     }
 
     return responseData
@@ -100,7 +115,7 @@ export default class YandexClient {
     const {
       account: { child: isChildrenOwnedAccount },
       plus: { hasPlus: premium }
-    } = await this.request<YandexAccountStatusResponse>(API_URLS.ACCOUNT_STATUS)
+    } = await this.request<APIAccountStatusResponse>(API_URL_ACCOUNT_STATUS)
 
     return {
       valid: true,
@@ -109,48 +124,48 @@ export default class YandexClient {
     }
   }
 
-  async getArtist(artistId: number): Promise<YandexArtist> {
-    const url = API_URLS.ARTIST_WITH_BRIEF_INFO({ artistId })
+  async getArtist(artistId: number): Promise<APIArtist> {
+    const url = createArtistAPIUrl(artistId)
 
     const { artist } = await this.request<{
-      artist: YandexArtist
+      artist: APIArtist
     }>(url)
 
     return artist
   }
 
-  async getAlbum(albumId: number): Promise<YandexAlbum> {
-    const url = API_URLS.ALBUM({ albumId })
-    return await this.request<YandexAlbum>(url)
+  async getAlbum(albumId: number): Promise<APIAlbum> {
+    const url = createAlbumAPIUrl(albumId)
+    return await this.request<APIAlbum>(url)
   }
 
-  async getTracks(trackIds: number[]): Promise<YandexTrack[]> {
-    const url = API_URLS.TRACKS({ trackIds })
-    return await this.request<YandexTrack[]>(url)
+  async getTracks(trackIds: number[]): Promise<APITrack[]> {
+    const url = createTracksAPIUrl(trackIds)
+    return await this.request<APITrack[]>(url)
   }
 
   async getPlaylist(
     userId: string,
     playlistKind: number
-  ): Promise<YandexPlaylist> {
-    return await this.request<YandexPlaylist>(
-      API_URLS.PLAYLIST({ userId, playlistKind })
+  ): Promise<APIPlaylist> {
+    return await this.request<APIPlaylist>(
+      createPlaylistAPIUrl(userId, playlistKind)
     )
   }
 
   async instantSearch(
     query: string,
     limit: number
-  ): Promise<YandexSearchResult[]> {
+  ): Promise<APISearchResult[]> {
     const { results } = await this.request<{
-      results: YandexSearchResult[]
+      results: APISearchResult[]
     }>(
-      API_URLS.INSTANT_SEARCH_MIXED({
+      createInstantSearchMixedAPIUrl(
         query,
-        types: ['album', 'artist', 'track'],
-        page: 0,
-        pageSize: limit
-      })
+        ['album', 'artist', 'track'],
+        0,
+        limit
+      )
     )
 
     return results
@@ -161,7 +176,7 @@ export default class YandexClient {
     quality: string,
     codecs: string[],
     transports: string[]
-  ): Promise<YandexDownloadInfo> {
+  ): Promise<APIDownloadInfo> {
     const signingRequest = generateStreamSignature(
       trackId,
       quality,
@@ -171,20 +186,20 @@ export default class YandexClient {
 
     try {
       const { downloadInfo } = await this.request<{
-        downloadInfo: YandexDownloadInfo
+        downloadInfo: APIDownloadInfo
       }>(
-        API_URLS.GET_FILE_INFO({
-          ...signingRequest,
+        createFileInfoAPIUrl(
+          signingRequest,
           trackId,
           quality,
           codecs,
           transports
-        })
+        )
       )
 
       return downloadInfo
     } catch (error: any) {
-      if ((error as YandexError).message === 'Invalid Sign') {
+      if ((error as APIError).message === 'Invalid Sign') {
         throw new BadSignatureError(signingRequest)
       }
 

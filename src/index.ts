@@ -1,2 +1,2 @@
-import { YandexStreamer as Yandex } from './streamer.js'
+import { Yandex } from './streamer/index.js'
 export default Yandex

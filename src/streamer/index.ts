@@ -18,25 +18,25 @@ import {
   TrackGetByUrlResponse
 } from 'lucida/types'
 
-import YandexClient from './client.js'
+import APIClient from './client.js'
+import { YandexOptions } from '../interfaces/internal.js'
 import {
-  YandexAlbumSearchResult,
-  YandexArtistSearchResult,
-  YandexStreamerOptions,
-  YandexTrack,
-  YandexTrackSearchResult
-} from './interfaces.js'
+  APIAlbumSearchResult,
+  APIArtistSearchResult,
+  APITrack,
+  APITrackSearchResult
+} from '../interfaces/api.js'
 import {
   convertToAlbumObject,
   convertToArtistObject,
   convertToPlaylistObject,
   convertToTrackObject
-} from './converters.js'
+} from '../converters/objects.js'
 
 import { Readable } from 'node:stream'
 
-export class YandexStreamer implements Streamer {
-  private readonly client: YandexClient
+export class Yandex implements Streamer {
+  private readonly client: APIClient
 
   hostnames = ['music.yandex.ru', 'music.yandex.com']
   testData: StreamerTestData = {
@@ -49,13 +49,13 @@ export class YandexStreamer implements Streamer {
       type: 'album'
     },
     'https://music.yandex.ru/users/yearbyyear/playlists/1235': {
-      title: "International 2010s Pop Music (Yandex.Music editor' playlist)",
+      title: "International 2010s Pop Music (API.Music editor' playlist)",
       type: 'playlist'
     }
   }
 
-  constructor(options: YandexStreamerOptions) {
-    this.client = new YandexClient(options.oauthToken, options.customUserAgent)
+  constructor(options: YandexOptions) {
+    this.client = new APIClient(options.oauthToken, options.customUserAgent)
   }
 
   async search(query: string, limit: number): Promise<SearchResults> {
@@ -73,21 +73,21 @@ export class YandexStreamer implements Streamer {
           query,
           tracks:
             searchGroups.track?.map((object) =>
-              convertToTrackObject((object as YandexTrackSearchResult).track)
+              convertToTrackObject((object as APITrackSearchResult).track)
             ) ?? [],
           albums:
             searchGroups.album?.map((object) =>
-              convertToAlbumObject((object as YandexAlbumSearchResult).album)
+              convertToAlbumObject((object as APIAlbumSearchResult).album)
             ) ?? [],
           artists:
             searchGroups.artist?.map((object) =>
-              convertToArtistObject((object as YandexArtistSearchResult).artist)
+              convertToArtistObject((object as APIArtistSearchResult).artist)
             ) ?? []
         }
       })
   }
 
-  private getStream(track: YandexTrack): () => Promise<GetStreamResponse> {
+  private getStream(track: APITrack): () => Promise<GetStreamResponse> {
     return async (): Promise<GetStreamResponse> => {
       const { codec, urls } = await this.client.getFileInfo(
         +track.id,

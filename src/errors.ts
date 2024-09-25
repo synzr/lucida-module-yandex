@@ -1,13 +1,14 @@
-import { YandexErrorObject, YandexSigningRequestResult } from './interfaces.js'
+import { SigningRequestResult } from './interfaces/internal.js'
+import { APIErrorObject } from './interfaces/api.js'
 
-export class YandexError implements Error {
+export class APIError implements Error {
   constructor(
     public readonly name: string,
     public readonly message: string
   ) {}
 
-  static createFromObject(object: YandexErrorObject): YandexError {
-    return new YandexError(object.name, object.message)
+  static createFromObject(object: APIErrorObject): APIError {
+    return new APIError(object.name, object.message)
   }
 }
 
@@ -42,5 +43,5 @@ export class BadSignatureError implements Error {
     'Bad signature is provided to server. ' +
     'Please report this error to maintainer(s)!'
 
-  constructor(public readonly signingRequest: YandexSigningRequestResult) {}
+  constructor(public readonly signingRequest: SigningRequestResult) {}
 }
