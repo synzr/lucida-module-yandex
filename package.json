@@ -1,7 +1,7 @@
 {
   "name": "lucida-module-yandex",
   "description": "Yandex.Music support for Lucida downloader library.",
-  "version": "0.6.0",
+  "version": "0.7.0",
   "main": "dist/index.js",
   "type": "module",
   "scripts": {

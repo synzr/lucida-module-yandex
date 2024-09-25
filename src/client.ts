@@ -1,7 +1,7 @@
 import { StreamerAccount } from 'lucida/types'
 import { API_URLS, HEADERS } from './constants.js'
 
-import { YandexError } from './errors.js'
+import { BadServerResponseError, YandexError } from './errors.js'
 import {
   YandexAccountStatusResponse,
   YandexAlbum,
@@ -39,37 +39,46 @@ export default class YandexClient {
 
   private async request<T>(url: URL): Promise<T> {
     const requestId = randomUUID()
-
-    return await fetch(url, {
+    const response = await fetch(url, {
       headers: this.createHeaders(requestId)
     })
-      .then(function onSuccess(response) {
-        if (response.headers.get('X-Request-Id') !== requestId) {
-          throw new Error("Bad server response; X-Request-Id doesn't match.")
-        }
 
-        return response.json()
-      })
-      .then(
-        function onSuccess(response: Object) {
-          if (
-            Object.hasOwn(response, 'name') &&
-            Object.hasOwn(response, 'message')
-          ) {
-            throw YandexError.createFromObject(response as YandexErrorObject)
-          }
-
-          return response as T
-        },
-        function onError(error) {
-          throw new Error('Bad server response; Response is not JSON', {
-            cause: error
-          })
-        }
+    if (response.status >= 200 && response.status < 300) {
+      throw new BadServerResponseError(
+        'Non-OK HTTP status code provided.',
+        response
       )
-      .catch(function onError(error) {
-        throw error
-      })
+    }
+
+    if (
+      !response.headers.has('X-Request-Id') ||
+      response.headers.get('X-Request-Id') !== requestId
+    ) {
+      throw new BadServerResponseError(
+        `Request ID (${requestId}) isn't match, nor provided by server.`,
+        response
+      )
+    }
+
+    let responseData: T
+    try {
+      responseData = (await response.json()) as T
+    } catch {
+      throw new BadServerResponseError(
+        'Failed to parse JSON data from response body',
+        response
+      )
+    }
+
+    if (
+      Object.hasOwn(responseData as object, 'error') &&
+      Object.hasOwn(responseData as object, 'message')
+    ) {
+      const errorObject = responseData as YandexErrorObject
+      throw YandexError.createFromObject(errorObject)
+    }
+
+    return responseData
   }
 
   async getAccountStatus(): Promise<StreamerAccount> {

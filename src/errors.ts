@@ -10,3 +10,24 @@ export class YandexError implements Error {
     return new YandexError(object.name, object.message)
   }
 }
+
+export class BadServerResponseError implements Error {
+  name = 'BadServerResponseError'
+
+  constructor(
+    public readonly message: string,
+    public readonly response: Response
+  ) {}
+
+  getHeaders(): Headers {
+    return this.response.headers
+  }
+
+  getStatusCode(): number {
+    return this.response.status
+  }
+
+  async getTextResponse(): Promise<string> {
+    return await this.response.text()
+  }
+}
