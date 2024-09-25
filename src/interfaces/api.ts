@@ -4,7 +4,7 @@ export interface APIErrorObject {
 }
 
 export interface APIAccountStatusResponse {
-  account: { child?: boolean }
+  account: { region?: number, child?: boolean }
   plus?: { hasPlus: boolean }
 }
 

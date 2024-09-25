@@ -32,6 +32,7 @@ import {
   createPlaylistObject,
   createTrackObject
 } from '../factories/objects.js'
+import REGIONS from '../constants/regions.js'
 
 import { Readable } from 'node:stream'
 
@@ -197,6 +198,9 @@ export class Yandex implements Streamer {
 
       return {
         valid: true,
+        country: REGIONS.has(accountStatus.account.region!)
+          ? REGIONS.get(accountStatus.account.region!)
+          : 'XX',
         premium: accountStatus.plus?.hasPlus ?? false,
         explicit: !accountStatus.account.child
       }
