@@ -12,6 +12,18 @@ npm install lucida-module-yandex
 pnpm add lucida-module-yandex
 ```
 
+### Roadmap
+
+- [x] Account status fetch implementation
+- [x] Instant search for `lucida.search()`
+- [x] Metadata fetcher implementation
+- [x] Working `getStream()` implementation
+- [x] Basic codebase refactoring
+- [ ] CI/CD via GitHub Actions
+- [ ] Outdated "download info" API as fallback after bad signature error
+- [ ] Lyrics downloader
+- [ ] Documentation of modern "download info" API
+
 ### Usage example
 
 ```js
