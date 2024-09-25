@@ -27,11 +27,11 @@ import {
   APITrackSearchResult
 } from '../interfaces/api.js'
 import {
-  convertToAlbumObject,
-  convertToArtistObject,
-  convertToPlaylistObject,
-  convertToTrackObject
-} from '../converters/objects.js'
+  createAlbumObject,
+  createArtistObject,
+  createPlaylistObject,
+  createTrackObject
+} from '../factories/objects.js'
 
 import { Readable } from 'node:stream'
 
@@ -73,15 +73,15 @@ export class Yandex implements Streamer {
           query,
           tracks:
             searchGroups.track?.map((object) =>
-              convertToTrackObject((object as APITrackSearchResult).track)
+              createTrackObject((object as APITrackSearchResult).track)
             ) ?? [],
           albums:
             searchGroups.album?.map((object) =>
-              convertToAlbumObject((object as APIAlbumSearchResult).album)
+              createAlbumObject((object as APIAlbumSearchResult).album)
             ) ?? [],
           artists:
             searchGroups.artist?.map((object) =>
-              convertToArtistObject((object as APIArtistSearchResult).artist)
+              createArtistObject((object as APIArtistSearchResult).artist)
             ) ?? []
         }
       })
@@ -125,7 +125,7 @@ export class Yandex implements Streamer {
 
         return {
           type: 'artist',
-          metadata: convertToArtistObject(artist)
+          metadata: createArtistObject(artist)
         } as ArtistGetByUrlResponse
       }
       case 'track':
@@ -139,8 +139,8 @@ export class Yandex implements Streamer {
           type,
           metadata:
             type === 'episode'
-              ? (convertToTrackObject(track) as Episode)
-              : (convertToTrackObject(track) as Track),
+              ? (createTrackObject(track) as Episode)
+              : (createTrackObject(track) as Track),
           getStream: this.getStream(track)
         } as EpisodeGetByUrlResponse | TrackGetByUrlResponse
       }
@@ -152,8 +152,8 @@ export class Yandex implements Streamer {
           type,
           metadata:
             type === 'podcast'
-              ? (convertToAlbumObject(album) as Podcast)
-              : (convertToAlbumObject(album) as Album)
+              ? (createAlbumObject(album) as Podcast)
+              : (createAlbumObject(album) as Album)
         } as AlbumGetByUrlResponse | PodcastGetByUrlResponse
       }
       case 'playlist': {
@@ -162,7 +162,7 @@ export class Yandex implements Streamer {
 
         return {
           type: 'playlist',
-          metadata: convertToPlaylistObject(playlist)
+          metadata: createPlaylistObject(playlist)
         } as PlaylistGetByUrlResponse
       }
     }

@@ -22,7 +22,7 @@ import {
   createInstantSearchMixedAPIUrl,
   createPlaylistAPIUrl,
   createTracksAPIUrl
-} from '../converters/urls.js'
+} from '../factories/urls/api.js'
 
 import {
   HEADER_AUTHORIZATION,
@@ -30,7 +30,7 @@ import {
   HEADER_USER_AGENT,
   HEADER_X_YANDEX_MUSIC_CLIENT
 } from '../constants/headers.js'
-import { API_URL_ACCOUNT_STATUS } from '../constants/api.js'
+import { API_URL_ACCOUNT_STATUS } from '../constants/urls/api.js'
 
 import { randomUUID } from 'node:crypto'
 import { format } from 'node:util'
@@ -111,9 +111,7 @@ export default class APIClient {
   }
 
   async getAccountStatus(): Promise<APIAccountStatusResponse> {
-    return await this.request<APIAccountStatusResponse>(
-      API_URL_ACCOUNT_STATUS
-    )
+    return await this.request<APIAccountStatusResponse>(API_URL_ACCOUNT_STATUS)
   }
 
   async getArtist(artistId: number): Promise<APIArtist> {

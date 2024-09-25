@@ -6,8 +6,8 @@ import {
   API_URL_INSTANT_SEARCH_MIXED,
   API_URL_PLAYLIST,
   API_URL_TRACKS
-} from '../constants/api.js'
-import { SigningRequestResult } from '../interfaces/internal.js'
+} from '../../constants/urls/api.js'
+import { SigningRequestResult } from '../../interfaces/internal.js'
 
 export function createAlbumAPIUrl(albumId: number): URL {
   return new URL(format(API_URL_ALBUM.pathname, albumId), API_URL_ALBUM.origin)
