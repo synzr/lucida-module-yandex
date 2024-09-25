@@ -10,15 +10,15 @@ export function generateStreamSignature(
 ): YandexSigningRequestResult {
   const timestamp = Math.floor(Date.now() / 1000)
 
+  const message = `${timestamp}${trackId}${quality}${codecs.join('')}${transports.join('')}`
   const signature = crypto
     .createHmac('sha256', KEYS.STREAM_SIGNATURE)
-    .update(
-      `${timestamp}${trackId}${quality}${codecs.join('')}${transports.join('')}`
-    )
+    .update(message)
     .digest('base64')
 
   return {
     signature: signature.substring(0, signature.length - 1),
+    raw: { message, key: KEYS.STREAM_SIGNATURE },
     timestamp
   }
 }

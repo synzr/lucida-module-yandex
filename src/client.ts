@@ -1,7 +1,12 @@
 import { StreamerAccount } from 'lucida/types'
 import { API_URLS, HEADERS } from './constants.js'
 
-import { BadServerResponseError, YandexError } from './errors.js'
+import {
+  BadServerResponseError,
+  BadSignatureError,
+  SmartCaptchaError,
+  YandexError
+} from './errors.js'
 import {
   YandexAccountStatusResponse,
   YandexAlbum,
@@ -18,12 +23,15 @@ import { format } from 'node:util'
 import { generateStreamSignature } from './security.js'
 
 export default class YandexClient {
-  constructor(private readonly oauthToken: string) {}
+  constructor(
+    private readonly oauthToken: string,
+    private readonly userAgent?: string
+  ) {}
 
   private createHeaders(requestId: string): Headers {
     const headers = new Headers()
 
-    headers.set('User-Agent', HEADERS.USER_AGENT)
+    headers.set('User-Agent', this.userAgent ?? HEADERS.USER_AGENT)
     headers.set('Authorization', format(HEADERS.AUTHORIZATION, this.oauthToken))
     headers.set('Origin', HEADERS.ORIGIN)
 
@@ -43,9 +51,16 @@ export default class YandexClient {
       headers: this.createHeaders(requestId)
     })
 
+    if (response.headers.has('X-Yandex-Captcha')) {
+      throw new SmartCaptchaError(
+        'Server just returned the SmartCaptcha challenge page. :(',
+        response
+      )
+    }
+
     if (response.status >= 200 && response.status < 300) {
       throw new BadServerResponseError(
-        'Non-OK HTTP status code provided.',
+        'Bad HTTP status code is provided by server.',
         response
       )
     }
@@ -147,7 +162,7 @@ export default class YandexClient {
     codecs: string[],
     transports: string[]
   ): Promise<YandexDownloadInfo> {
-    const signature = generateStreamSignature(
+    const signingRequest = generateStreamSignature(
       trackId,
       quality,
       codecs,
@@ -159,7 +174,7 @@ export default class YandexClient {
         downloadInfo: YandexDownloadInfo
       }>(
         API_URLS.GET_FILE_INFO({
-          ...signature,
+          ...signingRequest,
           trackId,
           quality,
           codecs,
@@ -169,8 +184,8 @@ export default class YandexClient {
 
       return downloadInfo
     } catch (error: any) {
-      if (error.message === 'Invalid Sign') {
-        throw new Error('Invalid sign; REPORT THIS TO MAINTAINERS')
+      if ((error as YandexError).message === 'Invalid Sign') {
+        throw new BadSignatureError(signingRequest)
       }
 
       throw error

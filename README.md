@@ -1,8 +1,6 @@
 # lucida-module-yandex
 
-[Yandex.Music](https://music.yandex.ru) support for [Lucida downloader library](https://git.gay/lucida/lucida).
-
-Everything _(including playlist and search functionality)_ is implemented.
+[Yandex.Music](https://music.yandex.ru) module for [Lucida downloader library](https://git.gay/lucida/lucida).
 
 ### Installation
 
@@ -17,14 +15,16 @@ pnpm add lucida-module-yandex
 ### Usage example
 
 ```js
-import Lucida from "lucida";
-import Yandex from "./dist/index.js"
+import Lucida from 'lucida'
+import Yandex from 'lucida-module-yandex'
 
 const lucida = new Lucida({
   modules: {
     yandex: new Yandex({
-      // the OAuth token (need for streamer to work)
-      oauthToken: 'y0_0000000000000000000000000000000000000000000000000000000'
+      // the OAuth token (required)
+      oauthToken: 'y0_0000000000000000000000000000000000000000000000000000000',
+      // custom user agent (optional; can be used to bypass SmartCaptcha)
+      customUserAgent: 'curl/8.10.1'
     })
   }
 })
@@ -40,7 +40,7 @@ async function main() {
   console.log('Поэзия (Album) - ПОЛЮСА:', album.metadata.trackCount, 'track(s)')
 
   const track = await lucida.getByUrl('https://music.yandex.ru/album/1111940/track/32656060')
-  console.log('Поэзия (Track) - ПОЛЮСА:', track.metadata.durationMs / 1000, 'second duration')
+  console.log('Поэзия (Track) - ПОЛЮСА:', track.metadata.durationMs / 1000, 'second(s)')
 
   const streamResponse = await track.getStream()
   console.log('Track mime type:' streamResponse.mimeType)

@@ -55,7 +55,7 @@ export class YandexStreamer implements Streamer {
   }
 
   constructor(options: YandexStreamerOptions) {
-    this.client = new YandexClient(options.oauthToken)
+    this.client = new YandexClient(options.oauthToken, options.customUserAgent)
   }
 
   async search(query: string, limit: number): Promise<SearchResults> {
@@ -101,17 +101,9 @@ export class YandexStreamer implements Streamer {
 
       // NOTE: strm CDN always respond with "audio/mpeg"
       //       for no reason
-      let mimeType: string
-      switch (codec) {
-        case 'aac':
-          mimeType = 'audio/aac'
-          break
-        case 'mp3':
-          mimeType = 'audio/mpeg'
-          break
-        case 'flac':
-          mimeType = 'audio/flac'
-          break
+      let mimeType = `audio/${codec}`
+      if (codec === 'mp3') {
+        mimeType = 'audio/mpeg'
       }
 
       return {

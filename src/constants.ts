@@ -43,9 +43,10 @@ export const API_URLS = {
     pageSize: number
   }): URL {
     query = encodeURIComponent(query)
+    const typesValue = encodeURIComponent(types.join(','))
 
     return new URL(
-      `/search/instant/mixed?text=${query}&type=${types.join(',')}&page=${page}&pageSize=${pageSize}`,
+      `/search/instant/mixed?text=${query}&type=${typesValue}&page=${page}&pageSize=${pageSize}`,
       'https://api.music.yandex.net/'
     )
   },

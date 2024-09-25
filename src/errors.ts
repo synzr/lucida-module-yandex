@@ -1,4 +1,4 @@
-import { YandexErrorObject } from './interfaces.js'
+import { YandexErrorObject, YandexSigningRequestResult } from './interfaces.js'
 
 export class YandexError implements Error {
   constructor(
@@ -30,4 +30,17 @@ export class BadServerResponseError implements Error {
   async getTextResponse(): Promise<string> {
     return await this.response.text()
   }
+}
+
+export class SmartCaptchaError extends BadServerResponseError {
+  name = 'SmartCaptchaError'
+}
+
+export class BadSignatureError implements Error {
+  name = 'BadSignatureError'
+  message =
+    'Bad signature is provided to server. ' +
+    'Please report this error to maintainer(s)!'
+
+  constructor(public readonly signingRequest: YandexSigningRequestResult) {}
 }

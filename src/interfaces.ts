@@ -1,5 +1,6 @@
 export interface YandexStreamerOptions {
   oauthToken: string
+  customUserAgent?: string
 }
 
 export interface YandexErrorObject {
@@ -86,6 +87,7 @@ export type YandexSearchResult =
 export interface YandexSigningRequestResult {
   timestamp: number
   signature: string
+  raw: { message: string; key: string }
 }
 
 export interface YandexDownloadInfo {
