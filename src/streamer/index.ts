@@ -193,7 +193,13 @@ export class Yandex implements Streamer {
 
   async getAccountInfo(): Promise<StreamerAccount> {
     try {
-      return await this.client.getAccountStatus()
+      const accountStatus = await this.client.getAccountStatus()
+
+      return {
+        valid: true,
+        premium: accountStatus.plus?.hasPlus ?? false,
+        explicit: !accountStatus.account.child
+      }
     } catch {
       return { valid: false }
     }

@@ -1,11 +1,3 @@
-import { StreamerAccount } from 'lucida/types'
-import {
-  HEADER_AUTHORIZATION,
-  HEADER_ORIGIN,
-  HEADER_USER_AGENT,
-  HEADER_X_YANDEX_MUSIC_CLIENT
-} from '../constants/headers.js'
-
 import {
   BadServerResponseError,
   BadSignatureError,
@@ -31,6 +23,13 @@ import {
   createPlaylistAPIUrl,
   createTracksAPIUrl
 } from '../converters/urls.js'
+
+import {
+  HEADER_AUTHORIZATION,
+  HEADER_ORIGIN,
+  HEADER_USER_AGENT,
+  HEADER_X_YANDEX_MUSIC_CLIENT
+} from '../constants/headers.js'
 import { API_URL_ACCOUNT_STATUS } from '../constants/api.js'
 
 import { randomUUID } from 'node:crypto'
@@ -111,17 +110,10 @@ export default class APIClient {
     return responseData
   }
 
-  async getAccountStatus(): Promise<StreamerAccount> {
-    const {
-      account: { child: isChildrenOwnedAccount },
-      plus: { hasPlus: premium }
-    } = await this.request<APIAccountStatusResponse>(API_URL_ACCOUNT_STATUS)
-
-    return {
-      valid: true,
-      explicit: !isChildrenOwnedAccount,
-      premium
-    }
+  async getAccountStatus(): Promise<APIAccountStatusResponse> {
+    return await this.request<APIAccountStatusResponse>(
+      API_URL_ACCOUNT_STATUS
+    )
   }
 
   async getArtist(artistId: number): Promise<APIArtist> {

@@ -4,8 +4,8 @@ export interface APIErrorObject {
 }
 
 export interface APIAccountStatusResponse {
-  account: { child: boolean }
-  plus: { hasPlus: boolean }
+  account: { child?: boolean }
+  plus?: { hasPlus: boolean }
 }
 
 export interface APIArtist {
