@@ -51,11 +51,11 @@ export default class APIClient {
     headers.set('Origin', HEADER_ORIGIN)
 
     headers.set('X-Request-Id', requestId)
-    headers.set('X-API-Music-Client', HEADER_X_YANDEX_MUSIC_CLIENT)
-    headers.set('X-API-Music-Frontend', 'new')
+    headers.set('X-Yandex-Music-Client', HEADER_X_YANDEX_MUSIC_CLIENT)
+    headers.set('X-Yandex-Music-Frontend', 'new')
 
     // NOTE: no useless invocation info in the server response
-    headers.set('X-API-Music-Without-Invocation-Info', '1')
+    headers.set('X-Yandex-Music-Without-Invocation-Info', '1')
 
     return headers
   }
@@ -66,7 +66,7 @@ export default class APIClient {
       headers: this.createHeaders(requestId)
     })
 
-    if (response.headers.has('X-API-Captcha')) {
+    if (response.headers.has('X-Yandex-Captcha')) {
       throw new SmartCaptchaError(
         'Server just returned the SmartCaptcha challenge page. :(',
         response
