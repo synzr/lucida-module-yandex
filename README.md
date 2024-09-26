@@ -1,5 +1,7 @@
 # lucida-module-yandex
 
+[![Lint](https://github.com/synzr/lucida-module-yandex/actions/workflows/lint.yaml/badge.svg?branch=main)](https://github.com/synzr/lucida-module-yandex/actions/workflows/lint.yaml) [![Versioning](https://github.com/synzr/lucida-module-yandex/actions/workflows/versioning.yaml/badge.svg?branch=main)](https://github.com/synzr/lucida-module-yandex/actions/workflows/versioning.yaml) [![Release](https://github.com/synzr/lucida-module-yandex/actions/workflows/release.yaml/badge.svg?branch=main)](https://github.com/synzr/lucida-module-yandex/actions/workflows/release.yaml)
+
 [Yandex.Music](https://music.yandex.ru) module for [Lucida downloader library](https://git.gay/lucida/lucida).
 
 ### Installation
@@ -20,6 +22,7 @@ pnpm add lucida-module-yandex
 - [x] Working `getStream()` implementation
 - [x] Basic codebase refactoring
 - [ ] CI/CD via GitHub Actions
+- [ ] Optional [MTS Music](https://music.mts.ru) API proxy
 - [ ] Outdated "download info" API as fallback after bad signature error
 - [ ] Lyrics downloader
 - [ ] Documentation of modern "download info" API

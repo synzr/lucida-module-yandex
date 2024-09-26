@@ -1,0 +1,51 @@
+name: Release
+
+on:
+  workflow_run:
+    workflows: 
+      - Versioning
+    types:
+      - completed
+  
+  workflow_dispatch:
+
+jobs:
+  build-and-publish-package:
+    name: Build and publish package
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out Git repository
+        uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        name: Install pnpm
+        with:
+          version: 9
+
+      - name: Install Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      
+      - name: Install dependencies
+        run: pnpm install
+      
+      - name: Check if package has been already updated
+        id: check-npm-package-version
+        uses: tehpsalmist/npm-publish-status-action@v1
+      
+      - if: ${{ steps.check-npm-package-version.outputs.exists == '1' }}
+        run: exit 1
+      
+      - name: Build package
+        run: pnpm build
+
+      - name: Set token to `.npmrc`
+        uses: filipstefansson/set-npm-token-action@v1
+        with:
+          token: ${{ secrets.npm_token }}
+      
+      - name: Publish package
+        run: |
+          pnpm publish --access public --no-git-checks

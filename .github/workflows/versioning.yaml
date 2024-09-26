@@ -1,0 +1,51 @@
+name: Versioning
+
+on:
+  workflow_run:
+    workflows: 
+      - Lint
+    types:
+      - completed
+
+permissions:
+  contents: write
+
+jobs:
+  automatic-semantic-versioning:
+    name: Automatically generate the package version
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out Git repository
+        uses: actions/checkout@v4
+      
+      - name: Calculate the package version
+        id: calculate-package-version
+        uses: ietf-tools/semver-action@v1
+        with:
+          token: ${{ github.token }}
+          noVersionBumpBehavior: current
+          noNewCommitBehavior: current
+          branch: main
+
+      - name: Install Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Set the package version
+        run: |
+          npm pkg set version="${{ steps.calculate-package-version.outputs.nextStrict }}"
+      
+      - if: ${{ steps.check-npm-package-version.outputs.current == steps.check-npm-package-version.outputs.next }}
+        run: exit 1
+      
+      - name: Commit the updated "package.json"
+        uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_user_name: R. Suzuki
+          commit_user_email: r.suzuki@synzr.space
+          commit_message: 'build(package): updated version to ${{ steps.calculate-package-version.outputs.nextStrict }}'
+          file_pattern: package.json
+          tagging_message: ${{ steps.calculate-package-version.outputs.nextStrict }}
+  
