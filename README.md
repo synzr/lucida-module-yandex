@@ -23,7 +23,7 @@ pnpm add lucida-module-yandex
 - [x] Basic codebase refactoring
 - [x] CI/CD via GitHub Actions
 - [x] Optional [MTS Music](https://music.mts.ru) API proxy
-- [ ] Outdated "download info" API as fallback after bad signature error
+- [x] Deprecated API as fallback after bad signature error
 - [ ] Lyrics downloader
 - [ ] Documentation of modern "download info" API
 
@@ -40,8 +40,10 @@ const lucida = new Lucida({
       oauthToken: 'y0_0000000000000000000000000000000000000000000000000000000',
       // custom user agent (optional; can be used to bypass SmartCaptcha)
       customUserAgent: 'curl/8.10.1',
-      // use MTS Music API proxy for API requests
-      useMTSProxy: false
+      // use MTS Music API proxy for API requests (optional; can be used to bypass SmartCaptcha)
+      useMTSProxy: false,
+      // force to use the deprecated API to download the audio (optional)
+      forceDeprecatedDownloadInfoAPI: false
     })
   }
 })

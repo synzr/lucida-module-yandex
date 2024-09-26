@@ -19,7 +19,7 @@ import {
 } from 'lucida/types'
 
 import APIClient from './client.js'
-import { YandexOptions } from '../interfaces/internal.js'
+import { StreamDownloadResult, YandexOptions } from '../interfaces/internal.js'
 import {
   APIAlbumSearchResult,
   APIArtistSearchResult,
@@ -34,10 +34,14 @@ import {
 } from '../factories/objects.js'
 import REGIONS from '../constants/regions.js'
 
+import { deprecated_getDirectLink } from './_deprecated_storage.js'
+
 import { Readable } from 'node:stream'
 
 export class Yandex implements Streamer {
   private readonly client: APIClient
+  private readonly useMTSProxy: boolean
+  private readonly forceDeprecatedDownloadInfoAPI: boolean
 
   hostnames = ['music.yandex.ru', 'music.yandex.com']
   testData: StreamerTestData = {
@@ -61,6 +65,10 @@ export class Yandex implements Streamer {
       options.customUserAgent,
       options.useMTSProxy
     )
+
+    this.useMTSProxy = options.useMTSProxy ?? false
+    this.forceDeprecatedDownloadInfoAPI =
+      options.forceDeprecatedDownloadInfoAPI ?? false
   }
 
   async search(query: string, limit: number): Promise<SearchResults> {
@@ -92,14 +100,65 @@ export class Yandex implements Streamer {
       })
   }
 
+  private async getDownloadInfo(
+    track: APITrack
+  ): Promise<StreamDownloadResult> {
+    let fileInfo = await this.client.getFileInfo(
+      +track.id,
+      'lossless',
+      ['mp3', 'aac', 'flac'],
+      ['raw']
+    ).then(
+      (result) => {
+        return !this.forceDeprecatedDownloadInfoAPI
+          ? result
+          : null
+      },
+      () => null
+    )
+
+    if (this.forceDeprecatedDownloadInfoAPI || !fileInfo) {
+      const downloadInfo = await this.client.deprecated_getDownloadInfo(
+        +track.id
+      )
+
+      const downloadInfoByCodecs = Object.groupBy(
+        downloadInfo,
+        (info) => info.codec
+      )
+
+      const selectedDownloadInfo = Object.hasOwn(downloadInfoByCodecs, 'mp3')
+        ? downloadInfoByCodecs.mp3!
+          .sort((a, b) => b.bitrateInKbps - a.bitrateInKbps)
+          .shift()
+        : downloadInfoByCodecs.aac!
+          .sort((a, b) => b.bitrateInKbps - a.bitrateInKbps)
+          .shift()
+
+      const directLink = await deprecated_getDirectLink(
+        selectedDownloadInfo!.downloadInfoUrl,
+        this.useMTSProxy
+      )
+
+      fileInfo = {
+        trackId: track.id,
+        quality: 'fake_quality_value',
+        codec: selectedDownloadInfo!.codec,
+        bitrate: selectedDownloadInfo!.bitrateInKbps,
+        transport: 'raw',
+        size: 0,
+        urls: [directLink],
+        url: directLink,
+        realId: track.id
+      }
+    }
+
+    return { codec: fileInfo.codec, urls: fileInfo.urls }
+  }
+
   private getStream(track: APITrack): () => Promise<GetStreamResponse> {
     return async (): Promise<GetStreamResponse> => {
-      const { codec, urls } = await this.client.getFileInfo(
-        +track.id,
-        'lossless',
-        ['mp3', 'aac', 'flac'],
-        ['raw']
-      )
+      const { codec, urls } = await this.getDownloadInfo(track)
 
       const streamUrl = urls.shift()!
       const streamResponse = await fetch(streamUrl)

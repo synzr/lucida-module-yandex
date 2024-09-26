@@ -8,7 +8,8 @@ import {
   API_URL_PLAYLIST,
   API_URL_TRACKS,
   BASE_API_URL_MTS,
-  BASE_API_URL_YANDEX
+  BASE_API_URL_YANDEX,
+  deprecated_API_URL_DOWNLOAD_INFO
 } from '../../constants/urls/api.js'
 import { SigningRequestResult } from '../../interfaces/internal.js'
 
@@ -90,4 +91,14 @@ export function createFileInfoAPIUrl(
   url.searchParams.set('sign', signingRequest.signature)
 
   return url
+}
+
+export function deprecated_createDownloadInfoAPIUrl(
+  trackId: number,
+  useMTSProxy: boolean = false
+): URL {
+  return new URL(
+    format(deprecated_API_URL_DOWNLOAD_INFO, trackId),
+    getBaseUrl(useMTSProxy)
+  )
 }

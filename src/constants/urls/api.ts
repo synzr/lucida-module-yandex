@@ -10,3 +10,5 @@ export const API_URL_ARTIST = 'artists/%d/brief-info'
 
 export const API_URL_INSTANT_SEARCH_MIXED = 'search/instant/mixed'
 export const API_URL_GET_FILE_INFO = 'get-file-info'
+
+export const deprecated_API_URL_DOWNLOAD_INFO = 'tracks/%d/download-info'

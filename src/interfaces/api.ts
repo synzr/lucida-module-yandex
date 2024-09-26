@@ -89,3 +89,12 @@ export interface APIDownloadInfo {
   url: string
   realId: string
 }
+
+export interface deprecated_APIDownloadInfo {
+  codec: 'aac' | 'mp3'
+  gain: boolean
+  preview: boolean
+  downloadInfoUrl: string
+  direct: false
+  bitrateInKbps: number
+}

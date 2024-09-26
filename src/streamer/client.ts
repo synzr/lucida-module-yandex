@@ -12,7 +12,8 @@ import {
   APIErrorObject,
   APIPlaylist,
   APISearchResult,
-  APITrack
+  APITrack,
+  deprecated_APIDownloadInfo
 } from '../interfaces/api.js'
 
 import {
@@ -22,7 +23,8 @@ import {
   createFileInfoAPIUrl,
   createInstantSearchMixedAPIUrl,
   createPlaylistAPIUrl,
-  createTracksAPIUrl
+  createTracksAPIUrl,
+  deprecated_createDownloadInfoAPIUrl
 } from '../factories/urls/api.js'
 
 import {
@@ -31,11 +33,11 @@ import {
   HEADER_USER_AGENT,
   HEADER_X_YANDEX_MUSIC_CLIENT
 } from '../constants/headers.js'
-import { API_URL_ACCOUNT_STATUS } from '../constants/urls/api.js'
+
+import { generateStreamSignature } from './security.js'
 
 import { randomUUID } from 'node:crypto'
 import { format } from 'node:util'
-import { generateStreamSignature } from './security.js'
 
 export default class APIClient {
   constructor(
@@ -200,5 +202,11 @@ export default class APIClient {
 
       throw error
     }
+  }
+
+  async deprecated_getDownloadInfo(trackId: number): Promise<deprecated_APIDownloadInfo[]> {
+    return await this.request<deprecated_APIDownloadInfo[]>(
+      deprecated_createDownloadInfoAPIUrl(trackId, this.useMTSProxy)
+    )
   }
 }
