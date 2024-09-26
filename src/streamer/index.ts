@@ -216,12 +216,17 @@ export class Yandex implements Streamer {
             type === 'podcast'
               ? (createAlbumObject(album) as Podcast)
               : (createAlbumObject(album) as Album),
-          ...(type === 'podcast' ? { episodes: trackObjects as Episode[] } : { tracks: trackObjects })
+          ...(type === 'podcast'
+            ? { episodes: trackObjects as Episode[] }
+            : { tracks: trackObjects })
         } as AlbumGetByUrlResponse | PodcastGetByUrlResponse
       }
       case 'playlist': {
         const [, userId, , playlistKind] = pathname.substring(1).split('/')
-        const { playlist, tracks } = await this.client.getPlaylistWithTracks(userId, +playlistKind)
+        const { playlist, tracks } = await this.client.getPlaylistWithTracks(
+          userId,
+          +playlistKind
+        )
 
         return {
           type: 'playlist',

@@ -1,4 +1,4 @@
-import { APIAlbum, APIPlaylist, APITrack } from "./api.js"
+import { APIAlbum, APIPlaylist, APITrack } from './api.js'
 
 export interface YandexOptions {
   oauthToken: string
