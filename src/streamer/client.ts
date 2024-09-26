@@ -15,6 +15,7 @@ import {
   APITrack,
   deprecated_APIDownloadInfo
 } from '../interfaces/api.js'
+import { AlbumWithTracks, PlaylistWithTracks } from '../interfaces/internal.js'
 
 import {
   createAccountStatusUrl,
@@ -135,6 +136,15 @@ export default class APIClient {
     return await this.request<APIAlbum>(url)
   }
 
+  async getAlbumWithTracks(albumId: number): Promise<AlbumWithTracks> {
+    const album = await this.getAlbum(albumId)
+    const tracks = await this.getTracks(
+      album.volumes!.flat().map(({ id }) => id)
+    )
+
+    return { album, tracks }
+  }
+
   async getTracks(trackIds: number[]): Promise<APITrack[]> {
     const url = createTracksAPIUrl(trackIds, this.useMTSProxy)
     return await this.request<APITrack[]>(url)
@@ -147,6 +157,16 @@ export default class APIClient {
     return await this.request<APIPlaylist>(
       createPlaylistAPIUrl(userId, playlistKind, this.useMTSProxy)
     )
+  }
+
+  async getPlaylistWithTracks(
+    userId: string,
+    playlistKind: number
+  ): Promise<PlaylistWithTracks> {
+    const playlist = await this.getPlaylist(userId, playlistKind)
+    const tracks = await this.getTracks(playlist.tracks.map(({ id }) => id))
+
+    return { playlist, tracks }
   }
 
   async instantSearch(

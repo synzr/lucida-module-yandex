@@ -3,7 +3,7 @@ export const BASE_API_URL_MTS = 'https://music.mts.ru/ya_api/'
 
 export const API_URL_ACCOUNT_STATUS = 'account/status'
 
-export const API_URL_ALBUM = 'albums/%d/'
+export const API_URL_ALBUM = 'albums/%d/with-tracks'
 export const API_URL_TRACKS = 'tracks?trackIds=trackIds'
 export const API_URL_PLAYLIST = 'users/%s/playlists/%d'
 export const API_URL_ARTIST = 'artists/%d/brief-info'

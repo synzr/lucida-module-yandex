@@ -20,6 +20,8 @@ export interface APILabel {
   name: string
 }
 
+export type APIVolume = Array<{ id: number }>
+
 export interface APIAlbum {
   id: number
   title: string
@@ -30,6 +32,7 @@ export interface APIAlbum {
   trackCount: number
   artists: APIArtist[]
   labels: APILabel[]
+  volumes?: APIVolume[]
   available: boolean
   genre?: string
 }
@@ -46,16 +49,22 @@ export interface APITrack {
   durationMs: number
 }
 
+export interface APIPlaylistTrack {
+  id: number
+  originalIndex: number
+}
+
 export interface APIPlaylist {
   kind: number
   title: string
   cover: {
     type: 'pic' | 'mosaic'
-    itemsUrl?: string[]
+    itemsUri?: string[]
     uri?: string
   }
   owner: { login: string }
   trackCount: number
+  tracks: APIPlaylistTrack[]
 }
 
 export interface APIAlbumSearchResult {

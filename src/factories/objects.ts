@@ -56,7 +56,8 @@ export function createAlbumObject(album: APIAlbum): Album {
           })
           .join(', ')
       : undefined,
-    genre: album.genre ? [album.genre] : []
+    genre: album.genre ? [album.genre] : [],
+    discCount: album.volumes?.length
   }
 }
 
@@ -84,7 +85,7 @@ export function createPlaylistObject(playlist: APIPlaylist): Playlist {
     url: createPlaylistWebUrl(playlist.owner.login, playlist.kind).toString(),
     coverArtwork:
       playlist.cover.type === 'mosaic'
-        ? createCoverArtworks(playlist.cover.itemsUrl!.shift()!)
+        ? createCoverArtworks(playlist.cover.itemsUri!.shift()!)
         : createCoverArtworks(playlist.cover.uri!),
     trackCount: playlist.trackCount
   }

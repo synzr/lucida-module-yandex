@@ -205,23 +205,28 @@ export class Yandex implements Streamer {
       }
       case 'album':
       case 'podcast': {
-        const album = await this.client.getAlbum(+pathname.split('/').pop()!)
+        const { album, tracks } = await this.client.getAlbumWithTracks(
+          +pathname.split('/').pop()!
+        )
+        const trackObjects = tracks.map(createTrackObject)
 
         return {
           type,
           metadata:
             type === 'podcast'
               ? (createAlbumObject(album) as Podcast)
-              : (createAlbumObject(album) as Album)
+              : (createAlbumObject(album) as Album),
+          ...(type === 'podcast' ? { episodes: trackObjects as Episode[] } : { tracks: trackObjects })
         } as AlbumGetByUrlResponse | PodcastGetByUrlResponse
       }
       case 'playlist': {
         const [, userId, , playlistKind] = pathname.substring(1).split('/')
-        const playlist = await this.client.getPlaylist(userId, +playlistKind)
+        const { playlist, tracks } = await this.client.getPlaylistWithTracks(userId, +playlistKind)
 
         return {
           type: 'playlist',
-          metadata: createPlaylistObject(playlist)
+          metadata: createPlaylistObject(playlist),
+          tracks: tracks.map(createTrackObject)
         } as PlaylistGetByUrlResponse
       }
     }
@@ -247,7 +252,7 @@ export class Yandex implements Streamer {
     }
 
     const album = await this.client.getAlbum(+url.split('/').pop()!)
-    return album.type === 'music' ? 'album' : 'podcast'
+    return album.metaType === 'music' ? 'album' : 'podcast'
   }
 
   async getAccountInfo(): Promise<StreamerAccount> {

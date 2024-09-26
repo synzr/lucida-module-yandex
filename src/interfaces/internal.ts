@@ -1,3 +1,5 @@
+import { APIAlbum, APIPlaylist, APITrack } from "./api.js"
+
 export interface YandexOptions {
   oauthToken: string
   customUserAgent?: string
@@ -14,4 +16,14 @@ export interface SigningRequestResult {
 export interface StreamDownloadResult {
   codec: string
   urls: string[]
+}
+
+export interface AlbumWithTracks {
+  album: APIAlbum
+  tracks: APITrack[]
+}
+
+export interface PlaylistWithTracks {
+  playlist: APIPlaylist
+  tracks: APITrack[]
 }
