@@ -22,7 +22,7 @@ pnpm add lucida-module-yandex
 - [x] Working `getStream()` implementation
 - [x] Basic codebase refactoring
 - [x] CI/CD via GitHub Actions
-- [ ] Optional [MTS Music](https://music.mts.ru) API proxy
+- [x] Optional [MTS Music](https://music.mts.ru) API proxy
 - [ ] Outdated "download info" API as fallback after bad signature error
 - [ ] Lyrics downloader
 - [ ] Documentation of modern "download info" API
@@ -39,7 +39,9 @@ const lucida = new Lucida({
       // the OAuth token (required)
       oauthToken: 'y0_0000000000000000000000000000000000000000000000000000000',
       // custom user agent (optional; can be used to bypass SmartCaptcha)
-      customUserAgent: 'curl/8.10.1'
+      customUserAgent: 'curl/8.10.1',
+      // use MTS Music API proxy for API requests
+      useMTSProxy: false
     })
   }
 })

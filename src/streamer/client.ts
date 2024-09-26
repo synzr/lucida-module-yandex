@@ -16,6 +16,7 @@ import {
 } from '../interfaces/api.js'
 
 import {
+  createAccountStatusUrl,
   createAlbumAPIUrl,
   createArtistAPIUrl,
   createFileInfoAPIUrl,
@@ -39,7 +40,8 @@ import { generateStreamSignature } from './security.js'
 export default class APIClient {
   constructor(
     private readonly oauthToken: string,
-    private readonly userAgent?: string
+    private readonly userAgent?: string,
+    private readonly useMTSProxy?: boolean
   ) {}
 
   private createHeaders(requestId: string): Headers {
@@ -111,11 +113,13 @@ export default class APIClient {
   }
 
   async getAccountStatus(): Promise<APIAccountStatusResponse> {
-    return await this.request<APIAccountStatusResponse>(API_URL_ACCOUNT_STATUS)
+    return await this.request<APIAccountStatusResponse>(
+      createAccountStatusUrl(this.useMTSProxy)
+    )
   }
 
   async getArtist(artistId: number): Promise<APIArtist> {
-    const url = createArtistAPIUrl(artistId)
+    const url = createArtistAPIUrl(artistId, this.useMTSProxy)
 
     const { artist } = await this.request<{
       artist: APIArtist
@@ -125,12 +129,12 @@ export default class APIClient {
   }
 
   async getAlbum(albumId: number): Promise<APIAlbum> {
-    const url = createAlbumAPIUrl(albumId)
+    const url = createAlbumAPIUrl(albumId, this.useMTSProxy)
     return await this.request<APIAlbum>(url)
   }
 
   async getTracks(trackIds: number[]): Promise<APITrack[]> {
-    const url = createTracksAPIUrl(trackIds)
+    const url = createTracksAPIUrl(trackIds, this.useMTSProxy)
     return await this.request<APITrack[]>(url)
   }
 
@@ -139,7 +143,7 @@ export default class APIClient {
     playlistKind: number
   ): Promise<APIPlaylist> {
     return await this.request<APIPlaylist>(
-      createPlaylistAPIUrl(userId, playlistKind)
+      createPlaylistAPIUrl(userId, playlistKind, this.useMTSProxy)
     )
   }
 
@@ -154,7 +158,8 @@ export default class APIClient {
         query,
         ['album', 'artist', 'track'],
         0,
-        limit
+        limit,
+        this.useMTSProxy
       )
     )
 

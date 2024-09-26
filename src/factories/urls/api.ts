@@ -1,20 +1,31 @@
 import { format } from 'util'
 import {
+  API_URL_ACCOUNT_STATUS,
   API_URL_ALBUM,
   API_URL_ARTIST,
   API_URL_GET_FILE_INFO,
   API_URL_INSTANT_SEARCH_MIXED,
   API_URL_PLAYLIST,
-  API_URL_TRACKS
+  API_URL_TRACKS,
+  BASE_API_URL_MTS,
+  BASE_API_URL_YANDEX
 } from '../../constants/urls/api.js'
 import { SigningRequestResult } from '../../interfaces/internal.js'
 
-export function createAlbumAPIUrl(albumId: number): URL {
-  return new URL(format(API_URL_ALBUM.pathname, albumId), API_URL_ALBUM.origin)
+function getBaseUrl(useMTSProxy: boolean): string {
+  return useMTSProxy ? BASE_API_URL_MTS : BASE_API_URL_YANDEX
 }
 
-export function createTracksAPIUrl(trackIds: number[]): URL {
-  const url = new URL(API_URL_TRACKS)
+export function createAccountStatusUrl(useMTSProxy: boolean = false): URL {
+  return new URL(API_URL_ACCOUNT_STATUS, getBaseUrl(useMTSProxy))
+}
+
+export function createAlbumAPIUrl(albumId: number, useMTSProxy: boolean = false): URL {
+  return new URL(format(API_URL_ALBUM, albumId), getBaseUrl(useMTSProxy))
+}
+
+export function createTracksAPIUrl(trackIds: number[], useMTSProxy: boolean = false): URL {
+  const url = new URL(API_URL_TRACKS, getBaseUrl(useMTSProxy))
   url.searchParams.set('trackIds', trackIds.join(','))
 
   return url
@@ -22,18 +33,19 @@ export function createTracksAPIUrl(trackIds: number[]): URL {
 
 export function createPlaylistAPIUrl(
   userId: string,
-  playlistKind: number
+  playlistKind: number,
+  useMTSProxy: boolean = false
 ): URL {
   return new URL(
-    format(API_URL_PLAYLIST.pathname, userId, playlistKind),
-    API_URL_PLAYLIST.origin
+    format(API_URL_PLAYLIST, userId, playlistKind),
+    getBaseUrl(useMTSProxy)
   )
 }
 
-export function createArtistAPIUrl(artistId: number): URL {
+export function createArtistAPIUrl(artistId: number, useMTSProxy: boolean = false): URL {
   return new URL(
-    format(API_URL_ARTIST.pathname, artistId),
-    API_URL_ARTIST.origin
+    format(API_URL_ARTIST, artistId),
+    getBaseUrl(useMTSProxy)
   )
 }
 
@@ -41,9 +53,10 @@ export function createInstantSearchMixedAPIUrl(
   text: string,
   types: string[],
   page: number = 0,
-  pageSize: number = 25
+  pageSize: number = 25,
+  useMTSProxy: boolean = false
 ): URL {
-  const url = new URL(API_URL_INSTANT_SEARCH_MIXED)
+  const url = new URL(API_URL_INSTANT_SEARCH_MIXED, getBaseUrl(useMTSProxy))
 
   url.searchParams.set('text', text)
   url.searchParams.set('type', types.join(','))
@@ -58,9 +71,10 @@ export function createFileInfoAPIUrl(
   trackId: number,
   quality: string,
   codecs: string[],
-  transports: string[]
+  transports: string[],
+  useMTSProxy: boolean = false
 ): URL {
-  const url = new URL(API_URL_GET_FILE_INFO)
+  const url = new URL(API_URL_GET_FILE_INFO, getBaseUrl(useMTSProxy))
 
   url.searchParams.set('ts', signingRequest.timestamp.toString())
   url.searchParams.set('trackId', trackId.toString())

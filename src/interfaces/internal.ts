@@ -1,6 +1,7 @@
 export interface YandexOptions {
   oauthToken: string
   customUserAgent?: string
+  useMTSProxy?: boolean
 }
 
 export interface SigningRequestResult {
