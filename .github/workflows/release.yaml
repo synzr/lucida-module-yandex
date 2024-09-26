@@ -1,0 +1,91 @@
+name: Release
+
+on:
+  workflow_run:
+    workflows: 
+      - Lint
+    types:
+      - completed
+
+permissions:
+  contents: write
+
+jobs:
+  automatic-semantic-versioning:
+    name: Automatically generate the package version
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out Git repository
+        uses: actions/checkout@v4
+      
+      - name: Get the current version from package.json
+        id: get-current-package-version
+        run: |
+          version=$(cat package.json | jq -r .version)
+          echo "version=$version" >> $GITHUB_OUTPUT
+      
+      - name: Calculate the package version
+        id: calculate-package-version
+        uses: bitshifted/git-auto-semver@v1
+        with:
+          main_branch: main
+          initial_version: 0.0.0
+
+
+      - name: Install Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Set the package version
+        run: |
+          npm pkg set version="${{ steps.calculate-package-version.outputs.version-string }}"
+      
+      - name: Check if package has been already updated
+        id: check-npm-package-version
+        uses: tehpsalmist/npm-publish-status-action@v1
+      
+      - if: ${{ steps.check-npm-package-version.outputs.exists == '1' }}
+        run: exit 1
+      
+      - name: Commit the updated "package.json"
+        uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_user_name: R. Suzuki
+          commit_message: 'build(package): updated version to ${{ steps.calculate-package-version.outputs.version-string }}'
+          file_pattern: package.json
+          tagging_message: '${{ steps.calculate-package-version.outputs.version-string }}'
+  
+  build-and-publish-package:
+    name: Build and publish package
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out Git repository
+        uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        name: Install pnpm
+        with:
+          version: 9
+
+      - name: Install Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      
+      - name: Install dependencies
+        run: pnpm install
+      
+      - name: Check if package has been already updated
+        id: check-npm-package-version
+        uses: tehpsalmist/npm-publish-status-action@v1
+      
+      - name: Publish if package hasn't been updated
+        if: ${{ steps.check-npm-package-version.outputs.exists == '0' }}
+        run: |
+          pnpm build
+          pnpm publish --access public
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.npm_token }}

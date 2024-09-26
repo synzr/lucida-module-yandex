@@ -198,9 +198,7 @@ export class Yandex implements Streamer {
 
       return {
         valid: true,
-        country: REGIONS.has(accountStatus.account.region!)
-          ? REGIONS.get(accountStatus.account.region!)
-          : 'XX',
+        country: REGIONS.get(accountStatus.account.region!) ?? 'XX',
         premium: accountStatus.plus?.hasPlus ?? false,
         explicit: !accountStatus.account.child
       }

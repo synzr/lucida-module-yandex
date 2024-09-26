@@ -1,13 +1,14 @@
 {
   "name": "lucida-module-yandex",
   "description": "Yandex.Music module for Lucida downloader library.",
-  "version": "0.8.0",
+  "version": "0.8.2",
   "main": "dist/index.js",
   "type": "module",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "lint": "prettier . --write",
-    "build": "tsc"
+    "build": "tsc",
+    "prepublish": "rm -rf dist/ && pnpm build"
   },
   "keywords": [],
   "homepage": "https://github.com/synzr/lucida-module-yandex",
