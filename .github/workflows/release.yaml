@@ -27,11 +27,10 @@ jobs:
       
       - name: Calculate the package version
         id: calculate-package-version
-        uses: bitshifted/git-auto-semver@v1
+        uses: ietf-tools/semver-action@v1
         with:
-          main_branch: main
-          initial_version: 0.0.0
-
+          token: ${{ github.token }}
+          branch: main
 
       - name: Install Node.js
         uses: actions/setup-node@v4
@@ -40,7 +39,7 @@ jobs:
 
       - name: Set the package version
         run: |
-          npm pkg set version="${{ steps.calculate-package-version.outputs.version-string }}"
+          npm pkg set version="${{ steps.calculate-package-version.outputs.current }}"
       
       - name: Check if package has been already updated
         id: check-npm-package-version
@@ -53,9 +52,10 @@ jobs:
         uses: stefanzweifel/git-auto-commit-action@v5
         with:
           commit_user_name: R. Suzuki
-          commit_message: 'build(package): updated version to ${{ steps.calculate-package-version.outputs.version-string }}'
+          commit_user_email: r.suzuki@synzr.space
+          commit_message: 'build(package): updated version to ${{ steps.calculate-package-version.outputs.current }}'
           file_pattern: package.json
-          tagging_message: '${{ steps.calculate-package-version.outputs.version-string }}'
+          tagging_message: '${{ steps.calculate-package-version.outputs.current }}'
   
   build-and-publish-package:
     name: Build and publish package
