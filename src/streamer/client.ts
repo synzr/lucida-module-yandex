@@ -204,7 +204,9 @@ export default class APIClient {
     }
   }
 
-  async deprecated_getDownloadInfo(trackId: number): Promise<deprecated_APIDownloadInfo[]> {
+  async deprecated_getDownloadInfo(
+    trackId: number
+  ): Promise<deprecated_APIDownloadInfo[]> {
     return await this.request<deprecated_APIDownloadInfo[]>(
       deprecated_createDownloadInfoAPIUrl(trackId, this.useMTSProxy)
     )

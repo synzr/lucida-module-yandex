@@ -103,19 +103,14 @@ export class Yandex implements Streamer {
   private async getDownloadInfo(
     track: APITrack
   ): Promise<StreamDownloadResult> {
-    let fileInfo = await this.client.getFileInfo(
-      +track.id,
-      'lossless',
-      ['mp3', 'aac', 'flac'],
-      ['raw']
-    ).then(
-      (result) => {
-        return !this.forceDeprecatedDownloadInfoAPI
-          ? result
-          : null
-      },
-      () => null
-    )
+    let fileInfo = await this.client
+      .getFileInfo(+track.id, 'lossless', ['mp3', 'aac', 'flac'], ['raw'])
+      .then(
+        (result) => {
+          return !this.forceDeprecatedDownloadInfoAPI ? result : null
+        },
+        () => null
+      )
 
     if (this.forceDeprecatedDownloadInfoAPI || !fileInfo) {
       const downloadInfo = await this.client.deprecated_getDownloadInfo(
@@ -128,12 +123,12 @@ export class Yandex implements Streamer {
       )
 
       const selectedDownloadInfo = Object.hasOwn(downloadInfoByCodecs, 'mp3')
-        ? downloadInfoByCodecs.mp3!
-          .sort((a, b) => b.bitrateInKbps - a.bitrateInKbps)
-          .shift()
-        : downloadInfoByCodecs.aac!
-          .sort((a, b) => b.bitrateInKbps - a.bitrateInKbps)
-          .shift()
+        ? downloadInfoByCodecs
+            .mp3!.sort((a, b) => b.bitrateInKbps - a.bitrateInKbps)
+            .shift()
+        : downloadInfoByCodecs
+            .aac!.sort((a, b) => b.bitrateInKbps - a.bitrateInKbps)
+            .shift()
 
       const directLink = await deprecated_getDirectLink(
         selectedDownloadInfo!.downloadInfoUrl,
