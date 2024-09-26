@@ -42,4 +42,6 @@ jobs:
           git_name: R. Suzuki
           git_email: r.suzuki@synzr.space
           commit_message: 'fix(lint): code style issues'
+          auto_fix: true
           prettier: true
+

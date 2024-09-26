@@ -2,7 +2,7 @@ name: Versioning
 
 on:
   workflow_run:
-    workflows: 
+    workflows:
       - Lint
     types:
       - completed
@@ -18,7 +18,7 @@ jobs:
     steps:
       - name: Check out Git repository
         uses: actions/checkout@v4
-      
+
       - name: Calculate the package version
         id: calculate-package-version
         uses: ietf-tools/semver-action@v1
@@ -36,10 +36,10 @@ jobs:
       - name: Set the package version
         run: |
           npm pkg set version="${{ steps.calculate-package-version.outputs.nextStrict }}"
-      
-      - if: ${{ steps.check-npm-package-version.outputs.current == steps.check-npm-package-version.outputs.next }}
+
+      - if: ${{ steps.calculate-package-version.outputs.current == steps.calculate-package-version.outputs.next }}
         run: exit 1
-      
+
       - name: Commit the updated "package.json"
         uses: stefanzweifel/git-auto-commit-action@v5
         with:
@@ -48,4 +48,3 @@ jobs:
           commit_message: 'build(package): updated version to ${{ steps.calculate-package-version.outputs.nextStrict }}'
           file_pattern: package.json
           tagging_message: ${{ steps.calculate-package-version.outputs.nextStrict }}
-  
