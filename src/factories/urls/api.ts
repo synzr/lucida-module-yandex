@@ -20,11 +20,17 @@ export function createAccountStatusUrl(useMTSProxy: boolean = false): URL {
   return new URL(API_URL_ACCOUNT_STATUS, getBaseUrl(useMTSProxy))
 }
 
-export function createAlbumAPIUrl(albumId: number, useMTSProxy: boolean = false): URL {
+export function createAlbumAPIUrl(
+  albumId: number,
+  useMTSProxy: boolean = false
+): URL {
   return new URL(format(API_URL_ALBUM, albumId), getBaseUrl(useMTSProxy))
 }
 
-export function createTracksAPIUrl(trackIds: number[], useMTSProxy: boolean = false): URL {
+export function createTracksAPIUrl(
+  trackIds: number[],
+  useMTSProxy: boolean = false
+): URL {
   const url = new URL(API_URL_TRACKS, getBaseUrl(useMTSProxy))
   url.searchParams.set('trackIds', trackIds.join(','))
 
@@ -42,11 +48,11 @@ export function createPlaylistAPIUrl(
   )
 }
 
-export function createArtistAPIUrl(artistId: number, useMTSProxy: boolean = false): URL {
-  return new URL(
-    format(API_URL_ARTIST, artistId),
-    getBaseUrl(useMTSProxy)
-  )
+export function createArtistAPIUrl(
+  artistId: number,
+  useMTSProxy: boolean = false
+): URL {
+  return new URL(format(API_URL_ARTIST, artistId), getBaseUrl(useMTSProxy))
 }
 
 export function createInstantSearchMixedAPIUrl(

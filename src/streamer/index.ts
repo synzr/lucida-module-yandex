@@ -56,7 +56,11 @@ export class Yandex implements Streamer {
   }
 
   constructor(options: YandexOptions) {
-    this.client = new APIClient(options.oauthToken, options.customUserAgent, options.useMTSProxy)
+    this.client = new APIClient(
+      options.oauthToken,
+      options.customUserAgent,
+      options.useMTSProxy
+    )
   }
 
   async search(query: string, limit: number): Promise<SearchResults> {
