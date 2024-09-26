@@ -19,6 +19,7 @@ pnpm add lucida-module-yandex
 - [x] Metadata fetcher implementation
 - [x] Working `getStream()` implementation
 - [x] Basic codebase refactoring
+- [ ] Optional [MTS Music](https://music.mts.ru) API proxy
 - [ ] CI/CD via GitHub Actions
 - [ ] Outdated "download info" API as fallback after bad signature error
 - [ ] Lyrics downloader
