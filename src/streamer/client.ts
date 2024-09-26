@@ -74,7 +74,7 @@ export default class APIClient {
       )
     }
 
-    if (response.status >= 200 && response.status < 300) {
+    if (response.status < 200 && response.status < 300) {
       throw new BadServerResponseError(
         'Bad HTTP status code is provided by server.',
         response

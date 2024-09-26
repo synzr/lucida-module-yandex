@@ -54,7 +54,7 @@ export function createAlbumObject(album: APIAlbum): Album {
           .map(function getLabelName(label: APILabel): string {
             return label.name
           })
-          .join()
+          .join(', ')
       : undefined,
     genre: album.genre ? [album.genre] : []
   }

@@ -41,7 +41,6 @@ jobs:
           github_token: ${{ secrets.github_token }}
           git_name: R. Suzuki
           git_email: r.suzuki@synzr.space
-          commit_message: 'fix(lint): code style issues'
+          commit_message: 'chore(lint): code style fix'
           auto_fix: true
           prettier: true
-

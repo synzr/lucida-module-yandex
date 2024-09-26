@@ -85,8 +85,8 @@ export function createFileInfoAPIUrl(
   url.searchParams.set('ts', signingRequest.timestamp.toString())
   url.searchParams.set('trackId', trackId.toString())
   url.searchParams.set('quality', quality)
-  url.searchParams.set('codecs', codecs.join(','))
-  url.searchParams.set('transports', transports.join(','))
+  url.searchParams.set('codecs', codecs.join())
+  url.searchParams.set('transports', transports.join())
   url.searchParams.set('sign', signingRequest.signature)
 
   return url
