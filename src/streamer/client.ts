@@ -2,7 +2,8 @@ import {
   BadServerResponseError,
   BadSignatureError,
   SmartCaptchaError,
-  APIError
+  APIError,
+  RoskomnadzorError
 } from '../errors.js'
 import {
   APIAccountStatusResponse,
@@ -13,6 +14,7 @@ import {
   APIPlaylist,
   APISearchResult,
   APITrack,
+  APITrackDisclaimer,
   deprecated_APIDownloadInfo
 } from '../interfaces/api.js'
 import { AlbumWithTracks, PlaylistWithTracks } from '../interfaces/internal.js'
@@ -24,6 +26,7 @@ import {
   createFileInfoAPIUrl,
   createInstantSearchMixedAPIUrl,
   createPlaylistAPIUrl,
+  createTrackDisclaimerAPIUrl,
   createTracksAPIUrl,
   deprecated_createDownloadInfoAPIUrl
 } from '../factories/urls/api.js'
@@ -145,9 +148,41 @@ export default class APIClient {
     return { album, tracks }
   }
 
-  async getTracks(trackIds: number[]): Promise<APITrack[]> {
+  async getTracks(
+    trackIds: number[],
+    removeUnavailableTracks: boolean = true
+  ): Promise<APITrack[]> {
     const url = createTracksAPIUrl(trackIds, this.useMTSProxy)
-    return await this.request<APITrack[]>(url)
+    let tracks = await this.request<APITrack[]>(url)
+
+    for (let track in tracks) {
+      if (removeUnavailableTracks && !tracks[track].available) {
+        tracks = tracks.splice(+track, 1)
+      }
+    }
+
+    return tracks
+  }
+
+  async getTrackDisclaimer(trackId: number): Promise<APITrackDisclaimer> {
+    const url = createTrackDisclaimerAPIUrl(trackId)
+    return await this.request<APITrackDisclaimer>(url)
+  }
+
+  async getTrack(trackId: number): Promise<APITrack> {
+    const [track] = await this.getTracks([trackId], false)
+
+    if (track.disclaimers.includes('modal')) {
+      const trackDisclaimer = await this.getTrackDisclaimer(trackId)
+
+      if (trackDisclaimer.modal?.reason === 'legal') {
+        throw new RoskomnadzorError(
+          'This track is banned in Russia by Roskomnadzor.'
+        )
+      }
+    }
+
+    return track
   }
 
   async getPlaylist(

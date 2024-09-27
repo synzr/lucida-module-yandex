@@ -45,3 +45,9 @@ export class BadSignatureError implements Error {
 
   constructor(public readonly signingRequest: SigningRequestResult) {}
 }
+
+export class RoskomnadzorError implements Error {
+  name = 'RoskomnadzorError'
+
+  constructor(public readonly message: string) {}
+}

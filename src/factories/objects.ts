@@ -68,7 +68,7 @@ export function createTrackObject(track: APITrack): Track {
     title: track.title,
     id: track.id,
     url: createTrackWebUrl(album.id, +track.id).toString(),
-    explicit: track.contentWarning === 'explicit',
+    explicit: track.disclaimers.includes('explicit'),
     copyright: track.major.name,
     artists: track.artists.map(createArtistObject),
     album: createAlbumObject(album),

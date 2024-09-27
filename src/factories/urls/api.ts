@@ -6,6 +6,7 @@ import {
   API_URL_GET_FILE_INFO,
   API_URL_INSTANT_SEARCH_MIXED,
   API_URL_PLAYLIST,
+  API_URL_TRACK_DISCLAIMER,
   API_URL_TRACKS,
   BASE_API_URL_MTS,
   BASE_API_URL_YANDEX,
@@ -36,6 +37,16 @@ export function createTracksAPIUrl(
   url.searchParams.set('trackIds', trackIds.join(','))
 
   return url
+}
+
+export function createTrackDisclaimerAPIUrl(
+  trackId: number,
+  useMTSProxy: boolean = false
+): URL {
+  return new URL(
+    format(API_URL_TRACK_DISCLAIMER, trackId),
+    getBaseUrl(useMTSProxy)
+  )
 }
 
 export function createPlaylistAPIUrl(

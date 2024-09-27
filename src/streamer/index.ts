@@ -248,15 +248,15 @@ export class Yandex implements Streamer {
       return 'artist'
     }
 
-    if (pathname.includes('/track/')) {
-      const tracks = await this.client.getTracks([+pathname.split('/').pop()!])
+    const id = +pathname.split('/').pop()!
 
-      return tracks.pop()!.albums.pop()!.metaType === 'music'
-        ? 'track'
-        : 'episode'
+    if (pathname.includes('/track/')) {
+      const track = await this.client.getTrack(id)
+
+      return track.albums.pop()!.metaType === 'music' ? 'track' : 'episode'
     }
 
-    const album = await this.client.getAlbum(+pathname.split('/').pop()!)
+    const album = await this.client.getAlbum(id)
     return album.metaType === 'music' ? 'album' : 'podcast'
   }
 

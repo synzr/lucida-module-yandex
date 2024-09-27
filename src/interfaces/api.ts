@@ -41,12 +41,20 @@ export interface APITrack {
   id: string
   title: string
   major: { id: number; name: string }
-  contentWarning?: 'explicit'
+  disclaimers: string[]
+  available: boolean
   coverUri?: string
   artists: APIArtist[]
   albums: APIAlbum[]
-  available: boolean
   durationMs: number
+}
+
+export interface APITrackDisclaimer {
+  modal?: {
+    reason: 'legal' | string
+    title: string
+    description: string
+  }
 }
 
 export interface APIPlaylistTrack {
