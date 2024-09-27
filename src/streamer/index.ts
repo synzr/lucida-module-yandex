@@ -71,8 +71,7 @@ export class Yandex implements Streamer {
 
     this.useMTSProxy = options.useMTSProxy ?? false
     this.forceDeprecatedAPI = options.forceDeprecatedAPI ?? false
-    this.deprecatedAPIFallback =
-      options.deprecatedAPIFallback ?? true
+    this.deprecatedAPIFallback = options.deprecatedAPIFallback ?? true
   }
 
   async search(query: string, limit: number): Promise<SearchResults> {
@@ -112,11 +111,9 @@ export class Yandex implements Streamer {
     )
 
     const downloadInfo = downloadInfos
-      .sort(
-        function sortByBitrate(a, b) {
-          return b.bitrateInKbps - a.bitrateInKbps
-        }
-      )
+      .sort(function sortByBitrate(a, b) {
+        return b.bitrateInKbps - a.bitrateInKbps
+      })
       .shift()
 
     const directLink = await deprecated_getDirectLink(

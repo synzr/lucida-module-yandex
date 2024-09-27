@@ -60,15 +60,27 @@ async function main() {
   const album = await lucida.getByUrl('https://music.yandex.ru/album/1111940')
   console.log('Поэзия (Album) - ПОЛЮСА:', album.metadata.trackCount, 'track(s)')
 
-  const track = await lucida.getByUrl('https://music.yandex.ru/album/1111940/track/32656060')
-  console.log('Поэзия (Track) - ПОЛЮСА:', track.metadata.durationMs / 1000, 'second(s)')
+  const track = await lucida.getByUrl(
+    'https://music.yandex.ru/album/1111940/track/32656060'
+  )
+  console.log(
+    'Поэзия (Track) - ПОЛЮСА:',
+    track.metadata.durationMs / 1000,
+    'second(s)'
+  )
 
   const streamResponse = await track.getStream()
   console.log('Track mime type:', streamResponse.mimeType)
   console.log('Track size in bytes:', streamResponse.sizeBytes)
 
-  const playlist = await lucida.getByUrl('https://music.yandex.ru/users/yearbyyear/playlists/1235')
-  console.log('International 2010s Pop Music (Playlist):', playlist.metadata.trackCount, 'track(s)')
+  const playlist = await lucida.getByUrl(
+    'https://music.yandex.ru/users/yearbyyear/playlists/1235'
+  )
+  console.log(
+    'International 2010s Pop Music (Playlist):',
+    playlist.metadata.trackCount,
+    'track(s)'
+  )
 }
 
 void main()
