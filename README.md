@@ -37,13 +37,15 @@ const lucida = new Lucida({
   modules: {
     yandex: new Yandex({
       // the OAuth token (required)
-      oauthToken: 'y0_0000000000000000000000000000000000000000000000000000000',
+      token: 'y0_0000000000000000000000000000000000000000000000000000000',
       // custom user agent (optional; can be used to bypass SmartCaptcha)
       customUserAgent: 'curl/8.10.1',
       // use MTS Music API proxy for API requests (optional; can be used to bypass SmartCaptcha)
       useMTSProxy: false,
       // force to use the deprecated API to download the audio (optional)
-      forceDeprecatedDownloadInfoAPI: false
+      forceDeprecatedAPI: false,
+      // disable the deprecated API fallback (optional)
+      deprecatedAPIFallback: false
     })
   }
 })
@@ -62,7 +64,7 @@ async function main() {
   console.log('Поэзия (Track) - ПОЛЮСА:', track.metadata.durationMs / 1000, 'second(s)')
 
   const streamResponse = await track.getStream()
-  console.log('Track mime type:' streamResponse.mimeType)
+  console.log('Track mime type:', streamResponse.mimeType)
   console.log('Track size in bytes:', streamResponse.sizeBytes)
 
   const playlist = await lucida.getByUrl('https://music.yandex.ru/users/yearbyyear/playlists/1235')

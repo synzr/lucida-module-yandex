@@ -23,6 +23,7 @@ import { StreamDownloadResult, YandexOptions } from '../interfaces/internal.js'
 import {
   APIAlbumSearchResult,
   APIArtistSearchResult,
+  APIDownloadInfo,
   APITrack,
   APITrackSearchResult
 } from '../interfaces/api.js'
@@ -37,11 +38,13 @@ import REGIONS from '../constants/regions.js'
 import { deprecated_getDirectLink } from './_deprecated_storage.js'
 
 import { Readable } from 'node:stream'
+import { BadSignatureError } from '../errors.js'
 
 export class Yandex implements Streamer {
   private readonly client: APIClient
   private readonly useMTSProxy: boolean
-  private readonly forceDeprecatedDownloadInfoAPI: boolean
+  private readonly forceDeprecatedAPI: boolean
+  private readonly deprecatedAPIFallback: boolean
 
   hostnames = ['music.yandex.ru', 'music.yandex.com']
   testData: StreamerTestData = {
@@ -61,14 +64,15 @@ export class Yandex implements Streamer {
 
   constructor(options: YandexOptions) {
     this.client = new APIClient(
-      options.oauthToken,
+      options.token,
       options.customUserAgent,
       options.useMTSProxy
     )
 
     this.useMTSProxy = options.useMTSProxy ?? false
-    this.forceDeprecatedDownloadInfoAPI =
-      options.forceDeprecatedDownloadInfoAPI ?? false
+    this.forceDeprecatedAPI = options.forceDeprecatedAPI ?? false
+    this.deprecatedAPIFallback =
+      options.deprecatedAPIFallback ?? true
   }
 
   async search(query: string, limit: number): Promise<SearchResults> {
@@ -100,55 +104,56 @@ export class Yandex implements Streamer {
       })
   }
 
+  private async getDownloadInfoUsingDeprecatedAPI(
+    track: APITrack
+  ): Promise<StreamDownloadResult> {
+    const downloadInfos = await this.client.deprecated_getDownloadInfo(
+      +track.id
+    )
+
+    const downloadInfo = downloadInfos
+      .sort(
+        function sortByBitrate(a, b) {
+          return b.bitrateInKbps - a.bitrateInKbps
+        }
+      )
+      .shift()
+
+    const directLink = await deprecated_getDirectLink(
+      downloadInfo!.downloadInfoUrl,
+      this.useMTSProxy
+    )
+
+    return {
+      codec: downloadInfo!.codec,
+      urls: [directLink]
+    }
+  }
+
   private async getDownloadInfo(
     track: APITrack
   ): Promise<StreamDownloadResult> {
-    let fileInfo = await this.client
-      .getFileInfo(+track.id, 'lossless', ['mp3', 'aac', 'flac'], ['raw'])
-      .then(
-        (result) => {
-          return !this.forceDeprecatedDownloadInfoAPI ? result : null
-        },
-        () => null
-      )
-
-    if (this.forceDeprecatedDownloadInfoAPI || !fileInfo) {
-      const downloadInfo = await this.client.deprecated_getDownloadInfo(
-        +track.id
-      )
-
-      const downloadInfoByCodecs = Object.groupBy(
-        downloadInfo,
-        (info) => info.codec
-      )
-
-      const selectedDownloadInfo = Object.hasOwn(downloadInfoByCodecs, 'mp3')
-        ? downloadInfoByCodecs
-            .mp3!.sort((a, b) => b.bitrateInKbps - a.bitrateInKbps)
-            .shift()
-        : downloadInfoByCodecs
-            .aac!.sort((a, b) => b.bitrateInKbps - a.bitrateInKbps)
-            .shift()
-
-      const directLink = await deprecated_getDirectLink(
-        selectedDownloadInfo!.downloadInfoUrl,
-        this.useMTSProxy
-      )
-
-      fileInfo = {
-        trackId: track.id,
-        quality: 'fake_quality_value',
-        codec: selectedDownloadInfo!.codec,
-        bitrate: selectedDownloadInfo!.bitrateInKbps,
-        transport: 'raw',
-        size: 0,
-        urls: [directLink],
-        url: directLink,
-        realId: track.id
-      }
+    if (this.forceDeprecatedAPI) {
+      return await this.getDownloadInfoUsingDeprecatedAPI(track)
     }
 
-    return { codec: fileInfo.codec, urls: fileInfo.urls }
+    try {
+      const fileInfo = await this.client.getFileInfo(
+        +track.id,
+        'lossless',
+        ['mp3', 'aac', 'flac'],
+        ['raw']
+      )
+      return { codec: fileInfo.codec, urls: fileInfo.urls }
+    } catch (error: any) {
+      const isBadSignatureError = error instanceof BadSignatureError
+
+      if (this.deprecatedAPIFallback || isBadSignatureError) {
+        return await this.getDownloadInfoUsingDeprecatedAPI(track)
+      }
+
+      throw error
+    }
   }
 
   private getStream(track: APITrack): () => Promise<GetStreamResponse> {
@@ -252,7 +257,6 @@ export class Yandex implements Streamer {
 
     if (pathname.includes('/track/')) {
       const track = await this.client.getTrack(id)
-
       return track.albums.pop()!.metaType === 'music' ? 'track' : 'episode'
     }
 

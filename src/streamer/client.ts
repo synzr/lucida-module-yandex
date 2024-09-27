@@ -108,7 +108,7 @@ export default class APIClient {
     }
 
     if (
-      Object.hasOwn(responseData as object, 'error') &&
+      Object.hasOwn(responseData as object, 'name') &&
       Object.hasOwn(responseData as object, 'message')
     ) {
       const errorObject = responseData as APIErrorObject

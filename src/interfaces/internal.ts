@@ -1,10 +1,11 @@
 import { APIAlbum, APIPlaylist, APITrack } from './api.js'
 
 export interface YandexOptions {
-  oauthToken: string
+  token: string
   customUserAgent?: string
   useMTSProxy?: boolean
-  forceDeprecatedDownloadInfoAPI?: boolean
+  forceDeprecatedAPI?: boolean
+  deprecatedAPIFallback?: boolean
 }
 
 export interface SigningRequestResult {
