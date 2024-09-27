@@ -44,8 +44,8 @@ const lucida = new Lucida({
       useMTSProxy: false,
       // force to use the deprecated API to download the audio (optional)
       forceDeprecatedAPI: false,
-      // disable the deprecated API fallback (optional)
-      deprecatedAPIFallback: false
+      // the deprecated API fallback (optional, enable by default)
+      deprecatedAPIFallback: true
     })
   }
 })
