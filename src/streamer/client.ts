@@ -153,15 +153,11 @@ export default class APIClient {
     removeUnavailableTracks: boolean = true
   ): Promise<APITrack[]> {
     const url = createTracksAPIUrl(trackIds, this.useMTSProxy)
-    let tracks = await this.request<APITrack[]>(url)
+    const tracks = await this.request<APITrack[]>(url)
 
-    for (let track in tracks) {
-      if (removeUnavailableTracks && !tracks[track].available) {
-        tracks = tracks.splice(+track, 1)
-      }
-    }
-
-    return tracks
+    return removeUnavailableTracks
+      ? tracks.filter((track) => track.available)
+      : tracks
   }
 
   async getTrackDisclaimer(trackId: number): Promise<APITrackDisclaimer> {
