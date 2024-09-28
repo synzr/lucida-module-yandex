@@ -78,12 +78,14 @@ export class Yandex implements Streamer {
     return this.client
       .instantSearch(query, limit)
       .then(function onSuccess(searchResults): SearchResults {
-        const searchGroups = Object.groupBy(
-          searchResults,
-          function groupCallback(searchResult) {
-            return searchResult.type
-          }
-        )
+        const searchGroups = searchResults.length > 0
+          ? Object.groupBy(
+            searchResults,
+            function groupCallback(searchResult) {
+              return searchResult.type
+            }
+          )
+          : {} // NOTE: no search results = empty object
 
         return {
           query,
