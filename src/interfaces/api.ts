@@ -35,6 +35,7 @@ export interface APIAlbum {
   volumes?: APIVolume[]
   available: boolean
   genre?: string
+  error?: 'no-rights' | 'not-found'
 }
 
 export interface APITrack {

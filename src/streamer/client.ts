@@ -3,7 +3,10 @@ import {
   BadSignatureError,
   SmartCaptchaError,
   APIError,
-  RoskomnadzorError
+  RoskomnadzorError,
+  PlaylistNotFoundError,
+  AlbumNotFoundError,
+  TrackNotFoundError
 } from '../errors.js'
 import {
   APIAccountStatusResponse,
@@ -136,7 +139,13 @@ export default class APIClient {
 
   async getAlbum(albumId: number): Promise<APIAlbum> {
     const url = createAlbumAPIUrl(albumId, this.useMTSProxy)
-    return await this.request<APIAlbum>(url)
+    const album = await this.request<APIAlbum>(url)
+
+    if (album.error === 'not-found') {
+      throw new AlbumNotFoundError(album.error, '')
+    }
+
+    return album
   }
 
   async getAlbumWithTracks(albumId: number): Promise<AlbumWithTracks> {
@@ -153,11 +162,19 @@ export default class APIClient {
     removeUnavailableTracks: boolean = true
   ): Promise<APITrack[]> {
     const url = createTracksAPIUrl(trackIds, this.useMTSProxy)
-    const tracks = await this.request<APITrack[]>(url)
 
-    return removeUnavailableTracks
-      ? tracks.filter((track) => track.available)
-      : tracks
+    try {
+      const tracks = await this.request<APITrack[]>(url)
+      return removeUnavailableTracks
+        ? tracks.filter((track) => track.available)
+        : tracks
+    } catch (error: any) {
+      if (error instanceof APIError && error.name === 'validate') {
+        throw new TrackNotFoundError(error.name, error.message)
+      }
+
+      throw error
+    }
   }
 
   async getTrackDisclaimer(trackId: number): Promise<APITrackDisclaimer> {
@@ -194,10 +211,18 @@ export default class APIClient {
     userId: string,
     playlistKind: number
   ): Promise<PlaylistWithTracks> {
-    const playlist = await this.getPlaylist(userId, playlistKind)
-    const tracks = await this.getTracks(playlist.tracks.map(({ id }) => id))
+    try {
+      const playlist = await this.getPlaylist(userId, playlistKind)
+      const tracks = await this.getTracks(playlist.tracks.map(({ id }) => id))
 
-    return { playlist, tracks }
+      return { playlist, tracks }
+    } catch (error) {
+      if (error instanceof APIError && error.name === 'playlist-not-found') {
+        throw new PlaylistNotFoundError(error.name, error.message)
+      }
+
+      throw error
+    }
   }
 
   async instantSearch(

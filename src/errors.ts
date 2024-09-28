@@ -51,3 +51,9 @@ export class RoskomnadzorError implements Error {
 
   constructor(public readonly message: string) {}
 }
+
+export class TrackNotFoundError extends APIError {}
+
+export class PlaylistNotFoundError extends APIError {}
+
+export class AlbumNotFoundError extends APIError {}
