@@ -41,6 +41,7 @@ export interface APIAlbum {
 export interface APITrack {
   id: string
   title: string
+  version?: string
   major: { id: number; name: string }
   disclaimers: string[]
   available: boolean

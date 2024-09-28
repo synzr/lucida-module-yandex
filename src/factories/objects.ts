@@ -65,7 +65,7 @@ export function createTrackObject(track: APITrack): Track {
   const album = track.albums.shift()!
 
   return {
-    title: track.title,
+    title: track.version ? `${track.title} (${track.version})` : track.title,
     id: track.id,
     url: createTrackWebUrl(album.id, +track.id).toString(),
     explicit: track.disclaimers.includes('explicit'),
