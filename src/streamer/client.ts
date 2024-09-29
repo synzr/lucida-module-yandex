@@ -46,11 +46,14 @@ import { generateStreamSignature } from './security.js'
 import { randomUUID } from 'node:crypto'
 import { format } from 'node:util'
 
+import { fetch, ProxyAgent } from 'undici'
+
 export default class APIClient {
   constructor(
     private readonly oauthToken: string,
     private readonly userAgent?: string,
-    private readonly useMTSProxy?: boolean
+    private readonly useMTSProxy?: boolean,
+    private readonly proxyAgent?: ProxyAgent
   ) {}
 
   private createHeaders(requestId: string): Headers {
@@ -73,7 +76,8 @@ export default class APIClient {
   private async request<T>(url: URL): Promise<T> {
     const requestId = randomUUID()
     const response = await fetch(url, {
-      headers: this.createHeaders(requestId)
+      headers: this.createHeaders(requestId),
+      dispatcher: this.proxyAgent
     })
 
     if (response.headers.has('X-Yandex-Captcha')) {

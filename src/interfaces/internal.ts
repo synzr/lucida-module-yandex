@@ -6,6 +6,7 @@ export interface YandexOptions {
   useMTSProxy?: boolean
   forceDeprecatedAPI?: boolean
   deprecatedAPIFallback?: boolean
+  proxyUrl?: string
 }
 
 export interface SigningRequestResult {

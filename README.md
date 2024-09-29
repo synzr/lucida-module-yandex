@@ -45,7 +45,9 @@ const lucida = new Lucida({
       // force to use the deprecated API to download the audio (optional)
       forceDeprecatedAPI: false,
       // the deprecated API fallback (optional, enable by default)
-      deprecatedAPIFallback: true
+      deprecatedAPIFallback: true,
+      // the HTTP proxy URL (optional; can be used to bypass SmartCaptcha)
+      proxyUrl: 'http://user:pass@localhost:8080'
     })
   }
 })

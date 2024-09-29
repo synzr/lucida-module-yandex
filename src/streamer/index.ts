@@ -40,11 +40,14 @@ import { deprecated_getDirectLink } from './_deprecated_storage.js'
 import { Readable } from 'node:stream'
 import { BadSignatureError } from '../errors.js'
 
+import { fetch, ProxyAgent } from 'undici'
+
 export class Yandex implements Streamer {
   private readonly client: APIClient
   private readonly useMTSProxy: boolean
   private readonly forceDeprecatedAPI: boolean
   private readonly deprecatedAPIFallback: boolean
+  private readonly proxyAgent?: ProxyAgent
 
   hostnames = ['music.yandex.ru', 'music.yandex.com']
   testData: StreamerTestData = {
@@ -63,10 +66,13 @@ export class Yandex implements Streamer {
   }
 
   constructor(options: YandexOptions) {
+    this.proxyAgent = options.proxyUrl ? new ProxyAgent(options.proxyUrl) : undefined
+
     this.client = new APIClient(
       options.token,
       options.customUserAgent,
-      options.useMTSProxy
+      options.useMTSProxy,
+      this.proxyAgent
     )
 
     this.useMTSProxy = options.useMTSProxy ?? false
@@ -121,7 +127,8 @@ export class Yandex implements Streamer {
 
     const directLink = await deprecated_getDirectLink(
       downloadInfo!.downloadInfoUrl,
-      this.useMTSProxy
+      this.useMTSProxy,
+      this.proxyAgent
     )
 
     return {
@@ -161,7 +168,7 @@ export class Yandex implements Streamer {
       const { codec, urls } = await this.getDownloadInfo(track)
 
       const streamUrl = urls.shift()!
-      const streamResponse = await fetch(streamUrl)
+      const streamResponse = await fetch(streamUrl, { dispatcher: this.proxyAgent })
 
       // NOTE: strm CDN always respond with "audio/mpeg"
       //       for no reason
@@ -172,7 +179,6 @@ export class Yandex implements Streamer {
 
       return {
         mimeType,
-        // @ts-expect-error
         stream: Readable.fromWeb(streamResponse.body!),
         sizeBytes: parseInt(streamResponse.headers.get('content-length')!, 10)
       }

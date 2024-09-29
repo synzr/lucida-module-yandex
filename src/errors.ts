@@ -1,6 +1,8 @@
 import { SigningRequestResult } from './interfaces/internal.js'
 import { APIErrorObject } from './interfaces/api.js'
 
+import { Response } from 'undici'
+
 export class APIError implements Error {
   constructor(
     public readonly name: string,

@@ -2,10 +2,12 @@ import { XMLParser } from 'fast-xml-parser'
 import { BadServerResponseError } from '../errors.js'
 import { deprecated_StorageDownloadInfo } from '../interfaces/_deprecated_storage.js'
 import { deprecated_generateStreamSignature } from './security.js'
+import { fetch, ProxyAgent } from 'undici'
 
 export async function deprecated_getDirectLink(
   sourceUrl: string,
-  useMTSProxy: boolean = false
+  useMTSProxy: boolean = false,
+  proxyAgent?: ProxyAgent
 ): Promise<string> {
   if (useMTSProxy) {
     sourceUrl = sourceUrl.replace(
@@ -14,7 +16,7 @@ export async function deprecated_getDirectLink(
     )
   }
 
-  const response = await fetch(sourceUrl)
+  const response = await fetch(sourceUrl, { dispatcher: proxyAgent })
 
   if (response.status === 410) {
     throw new BadServerResponseError(
