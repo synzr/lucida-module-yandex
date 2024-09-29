@@ -57,7 +57,7 @@ export class Yandex implements Streamer {
       type: 'album'
     },
     'https://music.yandex.ru/users/yearbyyear/playlists/1235': {
-      title: "International 2010s Pop Music (API.Music editor' playlist)",
+      title: "International 2010s Pop Music (Yandex.Music editor' playlist)",
       type: 'playlist'
     }
   }
@@ -253,7 +253,20 @@ export class Yandex implements Streamer {
       return 'artist'
     }
 
-    const id = +pathname.split('/').pop()!
+    let id: string | number = pathname.split('/').pop()!
+
+    if (
+      id === 'tracks' ||
+      id === 'albums' ||
+      id === 'videos' ||
+      id === 'concerts' ||
+      id === 'similar' ||
+      id === 'info'
+    ) {
+      id = pathname.split('/').at(-2)!
+    }
+
+    id = parseInt(id, 10)
 
     if (pathname.includes('/track/')) {
       const track = await this.client.getTrack(id)
