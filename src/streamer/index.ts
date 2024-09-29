@@ -66,7 +66,9 @@ export class Yandex implements Streamer {
   }
 
   constructor(options: YandexOptions) {
-    this.proxyAgent = options.proxyUrl ? new ProxyAgent(options.proxyUrl) : undefined
+    this.proxyAgent = options.proxyUrl
+      ? new ProxyAgent(options.proxyUrl)
+      : undefined
 
     this.client = new APIClient(
       options.token,
@@ -168,7 +170,9 @@ export class Yandex implements Streamer {
       const { codec, urls } = await this.getDownloadInfo(track)
 
       const streamUrl = urls.shift()!
-      const streamResponse = await fetch(streamUrl, { dispatcher: this.proxyAgent })
+      const streamResponse = await fetch(streamUrl, {
+        dispatcher: this.proxyAgent
+      })
 
       // NOTE: strm CDN always respond with "audio/mpeg"
       //       for no reason
