@@ -1,3 +1,7 @@
+# **THIS LIBRARY IS MOVED TO [GIT.GAY](https://git.gay/synzr-lucida/lucida-module-yandex)**
+
+**THIS REPOSITORY IS DEPRECATED AND ARCHIVED!**
+
 # lucida-module-yandex
 
 [![Lint](https://github.com/synzr/lucida-module-yandex/actions/workflows/lint.yaml/badge.svg?branch=main)](https://github.com/synzr/lucida-module-yandex/actions/workflows/lint.yaml) [![Versioning](https://github.com/synzr/lucida-module-yandex/actions/workflows/versioning.yaml/badge.svg?branch=main)](https://github.com/synzr/lucida-module-yandex/actions/workflows/versioning.yaml) [![Release](https://github.com/synzr/lucida-module-yandex/actions/workflows/release.yaml/badge.svg?branch=main)](https://github.com/synzr/lucida-module-yandex/actions/workflows/release.yaml)
